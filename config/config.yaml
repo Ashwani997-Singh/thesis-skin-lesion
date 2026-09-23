@@ -1,0 +1,117 @@
+# config/config.yaml
+# Single source of truth for every hyper-parameter.
+# Ashwani Singh (1229692) - MSc ML & AI, LJMU / upGrad
+#
+# CORRECTED against DECISION_LOG.md. The budget block previously declared
+# optimiser steps as the PRIMARY unit, which inverted D1 and contradicted
+# proposal Section 7.3 ("expressed in graphics processing unit hours").
+
+project:
+  name: skin-lesion-equal-budget
+  student_id: 1229692
+
+paths:
+  # Point at the PARENT directory on both platforms. src/data.py indexes
+  # recursively, so the flat local folder and the two-subfolder Kaggle
+  # mirror are handled identically. Never append part_1 / part_2.
+  local_images:  "D:/thesis/data/raw/HAM10000/images"
+  kaggle_images: "/kaggle/input/skin-cancer-mnist-ham10000"
+  metadata:      "data/raw/HAM10000/HAM10000_metadata.csv"
+  splits:        "data/splits"
+
+data:
+  image_size_classifier: 128     # classifier and GAN
+  image_size_diffusion:  512     # D6 - SD1.5 VAE downsamples by 8
+  expected_images:  10015        # asserted at index build time
+  expected_lesions: 7470
+  splits: {train: 0.70, val: 0.15, test: 0.15}
+
+  # D5 - classes synthesised and added to the training partition.
+  # Melanoma included because it is the declared primary outcome.
+  augmented_classes: [akiec, bcc, df, mel, vasc]
+
+  # D14 - the source partition BOTH generative arms train on.
+  # Must equal augmented_classes. src/data.py asserts this at load time.
+  generator_source_classes: [akiec, bcc, df, mel, vasc]
+
+outcomes:
+  primary:       [melanoma_recall, macro_f1]
+  supporting:    [balanced_accuracy, bcc_recall, akiec_recall, macro_auroc]
+  secondary:     [df_recall, vasc_recall]      # very low test support
+  reported_only: [accuracy]                    # never drives model selection
+
+budget:
+  # DECLARED UNIT. Proposal S7.3, D1. Authoritative.
+  gpu_hours_per_arm: 4.0
+
+  # Supplementary hardware-invariant cross-check and hard cap.
+  # NOT a redefinition of the declared unit. Named max_* deliberately.
+  max_optimiser_steps: 20000
+
+  # D9 - efficiency curve. Generator state is dumped as each threshold is
+  # crossed. These cannot be recovered after the run, so the tracker must
+  # signal them during training.
+  checkpoint_at_gpu_hours: [1.0, 2.0, 3.0, 4.0]
+
+  # D2 - sampling is outside the declared budget and reported separately.
+  sampling_excluded_from_budget: true
+
+classifier:
+  arch: resnet50
+  pretrained: true
+  batch_size: 32
+  epochs: 30
+  lr: 0.0001
+  weight_decay: 0.0001
+  patience: 7
+  select_on: macro_f1            # never accuracy
+
+gan:
+  latent_dim: 128
+  n_critic: 5
+  lambda_gp: 10
+  lr: 0.0002
+  betas: [0.5, 0.9]
+  batch_size: 64
+  # n_classes is NOT set here. It is derived from
+  # data.generator_source_classes so the label space cannot drift.
+
+diffusion:
+  base_model: "runwayml/stable-diffusion-v1-5"
+  lora_rank: 8
+  lora_alpha: 16
+  lr: 0.0001
+  batch_size: 1
+  grad_accum: 8
+  gradient_checkpointing: true
+  sampler:
+    # Fixed in advance; part of reproducibility, reported in the dissertation.
+    scheduler: default            # as shipped with SD1.5 (PNDM)
+    num_inference_steps: 30
+    guidance_scale: 7.5
+    batch_size: 8                 # sampling only; raise if VRAM allows
+    # Declared fallback if the timing pilot shows sampling is infeasible:
+    # DPMSolverMultistep at 25 steps, applied identically to every
+    # sampling call in both runs. Record as a decision if used.
+
+synthesis:
+  headline_per_class: 1000        # D7
+  curve_per_class:    500         # D16 - reduced from headline; see note
+  ablation_quantities: [0, 100, 250, 500, 1000, 2000]
+  # NOTE (D16): curve_per_class is deliberately lower than headline.
+  # The efficiency curve measures trajectory across budget, which stays
+  # internally valid provided quantity is constant across all curve points
+  # and both arms. Confirm against the sampling timing pilot before Step 14
+  # and record the final figure in DECISION_LOG.md.
+  timing_pilot_required: true
+
+audit:
+  feature_extractor: lpips_alex
+  percentile: 1.0                 # real-to-real calibration percentile
+  n_worst_pairs_to_plot: 10
+
+evaluation:
+  bootstrap_iterations: 1000
+  bootstrap_ci: 0.95
+
+seeds: [42, 43, 44]

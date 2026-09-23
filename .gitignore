@@ -1,0 +1,20 @@
+﻿# Raw data - never committed (licence: no redistribution, and 2.7 GB)
+data/raw/
+data/synthetic/
+
+# Model weights - regenerable, and far too large
+results/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Environment
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
+.DS_Store
