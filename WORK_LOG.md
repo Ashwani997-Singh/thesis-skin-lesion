@@ -327,6 +327,137 @@ PRE_REGISTRATION_2.md" heading had been lost when D17 was inserted. Restored.
 
 ---
 
+## Day 3 — Wednesday 23 September 2026
+
+**Phase:** 1 (dataset, split, freeze)
+**Machine:** local laptop (RTX 4060)
+
+### Objective
+Save and verify the lesion-level split, produce the exploratory figures, and
+freeze the split in version control before any generative model exists.
+
+### Completed
+
+**Split reproduced and saved.** Re-ran `lesion_level_split(df, seed=42)` in a
+fresh session and obtained numbers identical to Day 2 (train 6,981 / val 1,532 /
+test 1,502 images; 5,229 / 1,120 / 1,121 lesions). This is the practical
+demonstration that the seed makes the partition reproducible. Written to
+`data/splits/{train,val,test}.csv` (488 KB, 107 KB, 105 KB).
+
+**Saved files verified independently of memory:** re-read from disk, all three
+leakage assertions pass, 10,015 images accounted for, no `synthetic` column
+present, per-class counts match exactly.
+
+The first two rows of `train.csv` happen to illustrate the whole rationale:
+`HAM_0000118` appears twice, as `ISIC_0027419` and `ISIC_0025030` — one lesion,
+two photographs, both in train. Under an image-level split these could have been
+separated.
+
+**Five figures produced, all verified at 300 DPI:**
+
+| File | Content |
+|---|---|
+| `fig01_class_distribution.png` | Images per class; the five augmented classes highlighted |
+| `fig02_images_vs_lesions.png` | Images against unique lesions, with the ratio per class |
+| `fig03_photos_per_lesion.png` | Distribution of photographs per lesion |
+| `fig04_duplication_by_class.png` | Share of lesions with more than one photograph, by class |
+| `fig05_real_samples.png` | Four real training images per class, seeded for reproducibility |
+
+**New finding — duplication is not uniform across classes.** Of 7,470 lesions,
+1,956 (26.2%) carry more than one photograph, with a maximum of six.
+
+| Class | Lesions | Mean photos | >1 photo |
+|---|---|---|---|
+| mel | 614 | 1.81 | **62.5%** |
+| df | 73 | 1.58 | 46.6% |
+| bcc | 327 | 1.57 | 46.5% |
+| bkl | 727 | 1.51 | 39.5% |
+| vasc | 98 | 1.45 | 34.7% |
+| akiec | 228 | 1.43 | 33.8% |
+| nv | 5,403 | 1.24 | **18.3%** |
+
+Melanoma is the most heavily duplicated class and melanocytic nevi the least — a
+three-fold difference. Clinicians photographed suspicious lesions more
+thoroughly. The consequence matters: an image-level split would leak most
+severely on precisely the class declared as the primary outcome. This turns D11
+(lesion-level splitting) from a convention into measured evidence, and the
+paragraph is drafted for the methodology chapter.
+
+Note for the write-up: `max_photos` was examined and deliberately not reported,
+because it scales with class size (NV reaches 6 simply because it has 5,403
+lesions) and so measures sample size rather than duplication. The percentage is
+reported instead.
+
+**Version control established.**
+- Git installed and on PATH (2.55.0); VS Code restarted to pick it up
+- `.gitignore` written before the first commit: excludes `data/raw/`,
+  `data/synthetic/`, checkpoints, `*.pt`, `.venv/`
+- `git init -b main`; user name and email set locally (not globally, so the
+  existing DevOps repository is unaffected)
+- Staged and inspected before committing: exactly 20 files, no `.jpg`, no `.venv`
+- **FREEZE commit `0e2add07fc53bd9a62760b187c4301f1165917fe`,
+  Wed 23 Sep 2026 23:33:52 +0400** — the lesion-level split committed before any
+  generative model exists. Record this hash in the methodology chapter.
+- Private GitHub repository `Ashwani997-Singh/thesis-skin-lesion` created
+  (no README, no .gitignore, no licence, to avoid unrelated histories)
+- Pushed: 6.48 MiB — consistent with code, CSVs and figures only
+
+**Pre-registration corrected and committed (`02d7af7`).** Three earlier drafts
+existed in Downloads; the two dated 22 August still declared optimiser steps as
+the primary budget unit, which D1 had corrected. Only the latest was carried
+into the repository, renamed `PRE_REGISTRATION.md` so one authoritative version
+exists. Seven corrections applied:
+
+1. §6 cost: 5–7 GPU-hours was wrong — it counted the eight classifier runs but
+   omitted the sampling those runs depend on. Corrected to ~16 GPU-hours
+   (~11 sampling + 5–7 classifier), pending the timing pilot
+2. §6 lever: "reduce to three intervals" replaced with reducing curve quantity,
+   per D16
+3. `Date fixed:` completed, with the freeze commit hash
+4. §5: measured ratios substituted for estimates (MEL 0.29 to DF 13.08), per D18
+5. §2: measured test support substituted for estimates (MEL 167, DF 20, VASC 21)
+6. D14, D15 and D17 incorporated, which post-dated the 26 August draft
+7. §10: commit hash and budget unit added to the list that may not change
+
+### Problems and resolutions
+- `git` not recognised in the VS Code terminal although installed at
+  `C:\Program Files\Git\cmd\git.exe`. Cause: VS Code had been started before Git
+  entered PATH, and a process keeps the PATH it started with. Fixed by fully
+  restarting VS Code.
+- `git config` failed with "not in a git directory" — `git init` had not been run
+  yet. Resolved by initialising first.
+- Figures were briefly saved twice: once by `plt.savefig()` at 300 DPI and once
+  manually from the notebook at ~100 DPI. The manual copies were roughly a
+  quarter the file size and would not have met the university's 300 DPI
+  requirement. Removed. **Rule adopted: figures are written by `plt.savefig()`
+  into `results/figures/` only; the notebook preview is not the artefact.**
+
+### Proposal alignment reviewed
+Checked whether the declared quantities constitute deviations. They do not: the
+proposal deliberately specifies no figure for budget hours, resolution, synthetic
+quantity, augmented classes or seed count, stating only that the budget "will be
+declared before experimentation". Of eighteen logged decisions, sixteen are
+ALIGNED, one is a CORRECTION to an internal draft (D1), and **one is a genuine
+partial deviation (D8, hardware)** which requires a paragraph in the methodology
+chapter and an updated Table 8.2.
+
+### Open items
+- [ ] Figure 6 (split composition across partitions) not yet produced
+- [ ] `gpu_probe.py` and `sampling_pilot.py` still in Downloads, not yet run
+- [ ] Decision-log addendum (D14–D18) not yet copied into the repository
+- [ ] Class-level split-proportion table not yet written into the methodology draft
+- [ ] Ablation class still to be fixed (before the ablation is run)
+- [ ] `classifier.py`, `gan.py`, `diffusion.py` not yet written
+- [ ] README not yet written for the repository
+
+### Next session
+1. Figure 6 — split composition, the visual evidence that stratification held
+2. Move `gpu_probe.py` into the repository and run it (mains power, 5-minute soak)
+3. Copy `DECISION_LOG.md` and the addendum into the repository and commit
+4. Begin `classifier.py` — the Condition A baseline
+
+---
+
 ## Entry template
 
 ```markdown
