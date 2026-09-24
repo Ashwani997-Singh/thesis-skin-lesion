@@ -458,6 +458,129 @@ chapter and an updated Table 8.2.
 
 ---
 
+## Day 4 — Thursday 24 September 2026
+
+**Phase:** 1 (documentation, hardware characterisation)
+**Machine:** local laptop (RTX 4060)
+
+### Objective
+Complete the remaining Phase 1 documentation, characterise the hardware before
+any training, and bring every planning document into version control.
+
+### Completed
+
+**Figure 6 — split composition.** Class shares across the three partitions, on a
+log y-axis (NV at 67% and DF at 1% cannot both be read on a linear scale). Within
+each class the three bars sit at almost the same height, which is the visual
+evidence that stratification held. Largest deviation 0.67 percentage points.
+DF shows the only visible gap (train 1.02%, validation 1.57%): stratification
+operated on lesions, and the validation DF lesions happen to carry more
+photographs each. Commit `fdd87b8`.
+
+**Hardware characterisation (`gpu_probe.py`, 5-minute soak, mains power).**
+
+| Measurement | Result |
+|---|---|
+| GPU | NVIDIA RTX 4060 Laptop, 8.59 GB, CC 8.9 |
+| ResNet-50 @128 bs32 (AMP) | 36.5 ms/step, peak 0.87 GB |
+| WGAN-GP @128 bs32 (fp32) | 535 ms/step, peak 1.05 GB → ~26,900 steps in 4 h |
+| WGAN-GP @128 bs64 (fp32) | 1069 ms/step, peak **1.64 GB** → ~13,500 steps in 4 h |
+| SM clock over 300 s | 2625 MHz, **drift +0.0%** |
+| Temperature | stable 61–65 °C |
+| Peak power | 78.3 W (hardware max 140 W) |
+
+Two results matter more than expected.
+
+**No thermal throttling at all.** The planning documents assumed a laptop GPU
+would reduce clocks over a long run — `PRE_REGISTRATION.md` §3 justifies logging
+optimiser steps partly on that basis. Over five minutes of sustained WGAN-GP
+load the clock did not move, and the temperature settled well below the thermal
+limit. Four GPU-hours therefore represents the same quantity of computation at
+the end of a run as at the start, which is exactly what the equal-budget control
+requires. The step logging remains as a cross-check, but the concern that
+motivated it is weaker than assumed for this machine. To be re-measured over a
+full four-hour run before this is stated as a finding.
+
+**VRAM is not a constraint for the GAN arm.** Estimates during planning were
+4–6 GB for WGAN-GP at batch 64; the measured figure is **1.64 GB** of 8.59 GB.
+Batch 64 is comfortable, and roughly 6.5 GB remains free for the 512 px LoRA arm.
+
+Note: batch 64 takes almost exactly twice the time of batch 32, and utilisation
+sits at 98–100%, so the GPU is saturated rather than latency-bound. At batch 64,
+four GPU-hours yields ~13,500 generator steps, below the 20,000 step cap — the
+cap will therefore not bind, which is correct, since GPU-hours is the declared
+unit.
+
+**Repository completed.**
+- `gpu_probe.py`, `sampling_pilot.py`, `gpu_probe_results.json` committed (`5ef3f42`)
+- `DECISION_LOG.md` assembled: the original D1–D13 and the D14–D18 addendum
+  concatenated into one file, verified at 18 entries (`20dbef8`). This was
+  necessary because `PRE_REGISTRATION.md` references `DECISION_LOG.md` for the
+  reasoning behind D14–D18, and that reference was broken while the addendum sat
+  outside the repository
+- `README.md` written: study description, measured dataset counts, repository
+  structure, the freeze commit hash, environment reproduction steps, and the
+  hardware characterisation (`e3eaa81`)
+- `requirements.txt` generated with `pip freeze`
+
+### Problems and resolutions
+- `FileNotFoundError` on `data/raw/HAM10000/HAM10000_metadata.csv` when
+  re-running the notebook in a new session. Cause: the kernel's working directory
+  was `notebooks/`, not the project root. Fixed by adding
+  `os.chdir(r"D:\thesis")` at the top of the first cell. **Adopt this as the
+  first line of every notebook.**
+- `gpu_probe.py` and `sampling_pilot.py` had not in fact been downloaded in an
+  earlier session; `Move-Item` failed with PathNotFound. Re-obtained and moved.
+
+### Concepts clarified this session
+- A notebook stores cell text in the `.ipynb` file but variables live in the
+  kernel process, so they are lost when the kernel stops. Data must be reloaded
+  each session. From now on the split is **read from `data/splits/*.csv`**, never
+  regenerated — the partition is frozen.
+- Batch size is how many images the model processes before one weight update; a
+  step is one such update. For WGAN-GP one generator step comprises five critic
+  updates plus one generator update (`n_critic: 5`).
+- **Where the models come from, and why they differ.** No pretrained WGAN-GP
+  exists for dermatoscopic images, and adversarial generators do not transfer
+  across domains as diffusion models do, so the GAN is implemented and trained
+  from random initialisation. Stable Diffusion 1.5 is downloaded (~5 GB) and
+  adapted with LoRA. A pretrained adversarial generator would also make the
+  equal-budget control unmeasurable, since the compute already spent could not be
+  accounted for. The diffusion arm's pretraining is admitted because it is freely
+  and publicly available — the same assumption the study already makes for the
+  ImageNet-pretrained classifier in all four conditions.
+- **The claim this licenses.** Not "diffusion is the better architecture", which
+  would not survive the asymmetry, but "under a fixed adaptation budget with
+  freely available pretrained weights, which pipeline returns more minority-class
+  recall". Trainable-parameter counts are reported for both arms.
+
+### Proposal alignment
+No new deviations. The hardware result strengthens D8: a dedicated local GPU with
+no measurable throttling is a better guarantee of the equal-budget control than
+free-tier cloud hardware, which is the argument the methodology chapter will make
+when disclosing the Table 8.2 change.
+
+### Open items
+- [ ] `classifier.py` not yet written — Condition A baseline is the last
+      remaining Phase 1 item
+- [ ] `sampling_pilot.py` not yet run (needs Stable Diffusion weights; belongs to
+      the Kaggle session)
+- [ ] Ablation class still to be fixed, before the ablation is run
+- [ ] Split CSVs not yet uploaded to Kaggle as a private dataset
+- [ ] Kaggle notebook not yet created; Run 1 not yet begun
+- [ ] `gan.py`, `diffusion.py` not yet written
+
+### Next session
+1. Write `src/classifier.py` — ResNet-50, AdamW, cosine schedule, early stopping,
+   **checkpoint selection on validation macro-F1, never accuracy**
+2. Run Condition A on the RTX 4060 with seed 42 and inspect the result
+3. Check the gap between overall accuracy and balanced accuracy — that gap is the
+   imbalance problem made visible, and belongs in the results chapter
+4. If the baseline is plausible (accuracy 0.75–0.85, macro-F1 0.55–0.70), repeat
+   for seeds 43 and 44
+
+---
+
 ## Entry template
 
 ```markdown
