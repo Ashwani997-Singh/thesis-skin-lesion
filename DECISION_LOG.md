@@ -574,3 +574,81 @@ Section 6 currently states the efficiency curve costs "approximately 5–7
 GPU-hours". Replace with the corrected estimate including sampling, and state
 the curve quantity. Make this edit **before** filling in `Date fixed:` and
 committing at Step 8, so the committed pre-registration is the accurate one.
+
+---
+
+## D19 — Early-stopping criterion fixed at patience 7, not tuned
+
+**Decision.** Checkpoint selection uses validation macro-F1 with an
+early-stopping patience of **7 epochs** and a maximum of **30 epochs**. These
+values were fixed in `config/config.yaml` and committed to version control in
+commit `0e2add07` (23 September 2026, 23:33 +0400) — **before any training run**
+— and applied identically to every condition, every seed and both generative
+arms. They were **not tuned**, and are not revised in light of observed results.
+
+**Why this entry exists.** Neither value appears in the approved proposal or in
+`PRE_REGISTRATION.md`. Section 7.1 of the proposal requires "the number of
+training epochs" to be held constant across conditions but specifies no figure,
+and the pre-registration fixes only the selection *metric* ("model selection on
+validation macro-F1, never accuracy"), not the stopping rule. The choice is
+therefore recorded here so that its provenance and timing are documented rather
+than implicit in a configuration file.
+
+**Why these values.** Patience 2–3 would stop prematurely: validation macro-F1
+is itself noisy on this dataset, since DF and VASC contribute only 24 and 22
+validation images respectively, so a single favourable early epoch can start the
+counter while the model is still improving. Patience 15 against a 30-epoch
+ceiling would rarely trigger at all, making the mechanism inert and wasting GPU
+time after improvement has stopped. Seven sits between the two. No claim is made
+that it is optimal.
+
+**Why it was not tuned.** Three reasons.
+
+1. *The study's independent variable is the composition of the training data*
+   (proposal §7.1), not classifier hyperparameters. The classifier is held
+   constant by design; optimising it is outside the declared scope.
+2. *Tuning would consume the budget the study exists to allocate elsewhere.*
+   Evaluating five candidate values across four conditions and three seeds is
+   sixty classifier runs, of the order of forty GPU-hours — compute committed to
+   the generative comparison.
+3. *Legitimate tuning would have required stricter conditions* than are
+   available here: selection on validation data only, completed before any test
+   evaluation, and a single value applied to all conditions. Selecting a value
+   after observing test results would be exactly the practice pre-registration
+   exists to prevent.
+
+**Why a suboptimal value does not threaten the comparison.** The criterion is
+applied identically to all four conditions, all seeds and both arms. If patience
+7 stops training earlier than ideal, it does so equally everywhere, shifting
+every condition's absolute level by a similar amount while leaving the
+*differences between conditions* — which answer the research questions —
+intact.
+
+**Observed effect, recorded as a limitation.** In the Condition A baseline,
+early stopping triggered at epochs 25, 9 and 20 for seeds 42, 43 and 44, with
+best epochs 18, 2 and 13. Seed 43 stopped after ten epochs because a favourable
+epoch-2 score started the patience counter early; its test macro-F1 (0.5909) is
+the lowest of the three, and its AKIEC recall collapsed to 0.346 against 0.673
+for seed 42. This contributes materially to the observed seed-to-seed variance
+(melanoma recall 0.459 ± 0.051 across three seeds) and is stated in the
+limitations section. It is a property of the criterion applied uniformly, not a
+bias between conditions.
+
+**Reporting language fixed in advance:**
+> "Early stopping with patience 7 on validation macro-F1 triggered at different
+> epochs across seeds. Validation macro-F1 is itself noisy on this dataset, since
+> DF and VASC contribute only 24 and 22 validation images, so an early
+> favourable epoch can begin the patience counter prematurely. The criterion was
+> fixed before any training run and applied identically to all conditions,
+> seeds and generative arms, so it does not bias the comparison, but it
+> contributes to the reported seed-to-seed variance."
+
+**Proposal check.** Section 7.1, verbatim: *"All factors other than the training
+data, including the classifier architecture, the optimiser (Kingma and Ba,
+2015), the number of training epochs, the random seeds and the test partition,
+are held constant across conditions so that observed differences can be
+attributed to the augmentation strategy."* The proposal requires constancy and
+specifies no value; holding these constant satisfies it.
+
+**Status: ALIGNED.** Documents a value the proposal deliberately left
+unspecified, fixed before observation and applied uniformly.

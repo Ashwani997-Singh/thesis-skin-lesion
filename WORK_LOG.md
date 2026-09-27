@@ -581,6 +581,180 @@ when disclosing the Table 8.2 change.
 
 ---
 
+## Day 5 — Friday 25 September 2026
+
+**Phase:** 1 (baseline classifier — Condition A)
+**Machine:** local laptop (RTX 4060), Run 2 (replication)
+
+### Objective
+Write the classifier module and establish the Condition A baseline across three
+seeds. This is the reference point against which every other condition is read.
+
+### Completed
+
+**`src/classifier.py` written.** `build_model()` returns ResNet-50 with
+`IMAGENET1K_V2` weights and the final fully-connected layer replaced with a
+7-output layer (23.5 M parameters). `train_classifier()` fine-tunes with AdamW,
+a cosine schedule and mixed precision, using the torch 2.6 API
+(`torch.amp.autocast('cuda')`, `torch.amp.GradScaler('cuda')`) rather than the
+deprecated `torch.cuda.amp` form in the Build Manual.
+
+**The load-bearing line** is the checkpoint-selection criterion:
+`if val["macro_f1"] > best_f1`. Selecting on accuracy would systematically
+choose the checkpoint most confident about NV — precisely the failure mode this
+thesis is about.
+
+**Dataloaders built** with `augment=False` on all three partitions, per D4
+(Condition A is resizing and ImageNet normalisation only). The path index is
+built once and shared. `assert_no_synthetic_leakage` was run before training,
+as it will be before every training call.
+
+**Batch-composition measurement.** Of 50 randomly drawn training batches of 32,
+only **3 contained all seven classes**; on average two classes were absent from
+any given batch. DF is 1.02% of the training partition, so a batch of 32
+contains 0.33 DF images in expectation. The model receives feedback on NV in
+every batch and on DF in roughly one batch in three. This is the imbalance
+problem expressed at the level of the optimiser, and belongs in the results
+chapter.
+
+**Three baseline runs completed** (seeds 42, 43, 44), each evaluated once on the
+frozen test partition with 1,000-iteration bootstrap intervals. Metrics written
+to `results/run2_local/metrics/`.
+
+| Metric | Mean ± SD | Values (42 / 43 / 44) |
+|---|---|---|
+| Macro-F1 | **0.634 ± 0.038** | 0.662 / 0.591 / 0.648 |
+| Melanoma recall | **0.459 ± 0.051** | 0.509 / 0.461 / 0.407 |
+| Balanced accuracy | 0.602 ± 0.037 | 0.625 / 0.559 / 0.621 |
+| Accuracy | 0.805 ± 0.010 | 0.814 / 0.795 / 0.806 |
+| Macro AUROC | 0.931 ± 0.006 | 0.924 / 0.933 / 0.936 |
+
+Per-class recall (mean ± SD across seeds):
+
+| Class | Recall | n |
+|---|---|---|
+| nv | 0.947 ± 0.010 | 1004 |
+| bcc | 0.643 ± 0.081 | 71 |
+| vasc | 0.635 ± 0.027 | 21 |
+| akiec | 0.532 ± 0.168 | 52 |
+| bkl | 0.511 ± 0.066 | 167 |
+| df | 0.483 ± 0.126 | 20 |
+| mel | 0.459 ± 0.051 | 167 |
+
+All values fall inside the Build Manual's plausible ranges, and accuracy is
+below 0.90 — consistent with an absence of leakage.
+
+### Findings
+
+**The imbalance problem is now measured, not cited.** A correctly trained
+ResNet-50 reports 80.5% accuracy while missing more than half of all melanoma
+(recall 0.459). The 20-point gap between accuracy (0.805) and balanced accuracy
+(0.602) holds across all three seeds. This is the empirical justification for
+every metric choice in the study.
+
+**Accuracy is insensitive to what matters.** Across 26 epochs of seed 42,
+validation accuracy moved only between 0.78 and 0.82 while validation macro-F1
+rose from 0.48 to 0.65. The model was improving substantially and accuracy
+barely registered it. Had checkpoints been selected on accuracy, seed 42 would
+have selected epoch 6 (accuracy 0.8166, macro-F1 0.6227) instead of epoch 18
+(macro-F1 0.6469) — a materially worse model.
+
+**Bootstrap interval width scales inversely with support**, exactly as D13
+anticipated:
+
+| Class | n | 95% CI width |
+|---|---|---|
+| nv | 1004 | 0.029 |
+| mel | 167 | 0.149 |
+| bcc | 71 | 0.236 |
+| akiec | 52 | 0.263 |
+| vasc | 21 | 0.439 |
+| df | 20 | 0.455 |
+
+DF recall of 0.500 carries an interval of [0.273 – 0.727]. Differences below
+roughly 45 percentage points on DF cannot be distinguished from sampling
+variation. The pre-registered designation of melanoma as primary and DF/VASC as
+secondary (D13) is confirmed by measurement.
+
+**A concern for later conditions.** Melanoma recall is the *least* stable of
+the headline metrics across seeds (SD 0.051) while accuracy is the most stable
+(SD 0.010) — the useful metric is the noisy one. Any improvement claimed for
+the generative arms must exceed this spread; roughly 0.56 would be needed for a
+confident claim on three seeds. Consider five seeds if time permits (permitted
+by `PRE_REGISTRATION.md` §9).
+
+**AUROC and F1 diverge informatively.** Macro AUROC is 0.931 while macro-F1 is
+0.634. The model ranks suspicious images correctly but, at the argmax decision,
+imbalance pushes it toward NV. The discriminative information is present; the
+decision rule is what fails. This supports D15's treatment of AUROC as
+supplementary rather than substitutive.
+
+**Early stopping behaved unevenly across seeds**: it triggered at epochs 25, 9
+and 20, with best epochs 18, 2 and 13. Seed 43 stopped after ten epochs because
+a favourable epoch-2 score began the patience counter early; its macro-F1
+(0.591) is the lowest of the three and its AKIEC recall collapsed to 0.346
+against 0.673 for seed 42. Recorded as D19.
+
+**Class distinctiveness matters as well as class size.** VASC has 21 test
+images yet the *second most stable* recall (SD 0.027), because vascular lesions
+are visually unambiguous. AKIEC has 52 test images and the *least* stable
+recall (SD 0.168). Support alone does not predict stability. Worth raising in
+the discussion chapter.
+
+### Decisions
+**D19 added** — the early-stopping criterion (patience 7, max 30 epochs) is
+recorded because it appears in neither the proposal nor the pre-registration.
+It was fixed in `config.yaml` and committed in `0e2add07` before any training
+run, applied identically to all conditions, seeds and arms, and **was not
+tuned**. Tuning would have cost roughly forty GPU-hours and would have optimised
+a variable the study holds constant by design. A suboptimal but uniform
+criterion shifts every condition's level equally and leaves the differences
+intact.
+
+### Problems and resolutions
+- An attempt to append D19 by rewriting `DECISION_LOG.md` in PowerShell
+  truncated the file to six entries: the `Select-String` pattern failed to match
+  the em-dash in the addendum heading. Recovered with `git checkout --
+  DECISION_LOG.md`, which restored the committed 18-entry version — a concrete
+  demonstration of why the repository exists.
+- The retry with `Add-Content` succeeded but corrupted UTF-8 em-dashes
+  (`â€"`). Resolved by reading and writing through
+  `System.IO.File.ReadAllText/WriteAllText` with an explicit UTF-8 encoding.
+  **Rule adopted: edit Markdown through .NET UTF-8 calls, not PowerShell
+  redirection.**
+
+### Clarifications recorded
+- Validation never updates weights; it only measures. Training loss and
+  validation macro-F1 are not comparable quantities — the first reports fit to
+  data the model has seen, the second performance on data it has not.
+- Bootstrap resamples the *test predictions*, with replacement, at the original
+  size. It retrains nothing and changes no image counts. It answers "how much
+  would this number move on a different sample of the same size?", which is a
+  different question from the quantity ablation (RQ4).
+- The study reports all seven classes; macro-F1, a primary outcome, weights them
+  equally. Melanoma receives particular attention for a clinical reason (it is
+  named in proposal §7.6) and a statistical one (n=167 gives the narrowest
+  interval among the minority classes), not because other classes are excluded.
+
+### Open items
+- [ ] Condition B (classical augmentation) not yet run
+- [ ] Confusion matrices not yet plotted — needed to see what melanoma is
+      confused *with*
+- [ ] `sampling_pilot.py` not yet run (Kaggle session)
+- [ ] Split CSVs not yet uploaded to Kaggle as a private dataset
+- [ ] Run 1 (Kaggle, the pre-registered primary execution) not yet begun
+- [ ] `gan.py`, `diffusion.py` not yet written
+- [ ] Ablation class still to be fixed
+
+### Next session
+1. Condition B — classical augmentation, three seeds, `augment=True` on the
+   training loader only
+2. Plot confusion matrices for A and B; check specifically whether melanoma is
+   being absorbed into NV
+3. Compare A and B — this is the bar the generative arms must clear (RQ3)
+
+---
+
 ## Entry template
 
 ```markdown
