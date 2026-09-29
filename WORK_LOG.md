@@ -755,6 +755,155 @@ intact.
 
 ---
 
+## Day 6 — Saturday 26 September 2026
+
+**Phase:** 1–2 (classical augmentation reference; Run 1 environment setup)
+**Machine:** local RTX 4060 (Run 2), plus Kaggle setup
+
+### Objective
+Establish Condition B, understand *where* the classifier's errors fall, and
+begin preparing the pre-registered primary execution on Kaggle.
+
+### Completed
+
+**Condition B — classical augmentation, three seeds.** Identical to Condition A
+in every respect except `augment=True` on the training loader. Verified before
+running that the transform pipelines differed only where intended:
+
+```
+train(aug)  Resize, RandomHorizontalFlip, RandomVerticalFlip, RandomRotation,
+            ColorJitter, RandomAffine, ToTensor, Normalize
+val         Resize, ToTensor, Normalize
+test        Resize, ToTensor, Normalize
+```
+
+**Results, A vs B (mean ± SD over seeds 42/43/44):**
+
+| Metric | A baseline | B classical | Diff | A's SD | Beyond noise? |
+|---|---|---|---|---|---|
+| Macro-F1 | 0.6337 ± 0.0377 | 0.6659 ± 0.0179 | +0.032 | 0.038 | No |
+| Melanoma recall | 0.4591 ± 0.0509 | 0.4990 ± 0.0714 | +0.040 | 0.051 | No |
+| Balanced accuracy | 0.6015 ± 0.0370 | 0.6553 ± 0.0355 | +0.054 | 0.037 | Marginal |
+| Accuracy | 0.8051 ± 0.0097 | 0.8096 ± 0.0139 | +0.004 | 0.010 | No |
+| **Macro AUROC** | 0.9308 ± 0.0064 | **0.9502 ± 0.0017** | **+0.019** | 0.006 | **Yes** |
+
+Per-class recall (A → B): vasc +0.111, akiec +0.103, bcc +0.061, df +0.050,
+mel +0.040, bkl +0.030, **nv −0.018**. The pattern is consistent — minority
+classes gain, the majority class loses slightly. Augmentation shifted the
+model's attention away from NV.
+
+**Only AUROC clears the noise floor.** Its improvement (+0.019) is eleven times
+its standard deviation (0.0017), and B's spread is *smaller* than A's, so
+augmentation also stabilised results. Every other gain is real in direction but
+within seed-to-seed variance at three seeds. Melanoma recall moved
+inconsistently: −0.090 on seed 42, +0.096 on seed 43, +0.114 on seed 44.
+
+**Overfitting was visibly suppressed.** Condition A drove training loss to
+0.0014; Condition B stopped at 0.098. Training also ran longer where it
+mattered — seed 43 stopped at epoch 9 under A but ran to epoch 27 under B,
+and its macro-F1 rose from 0.591 to 0.686.
+
+**Figure 7 — confusion matrices for A and B**, row-normalised, averaged over
+three seeds. This produced the most clinically significant finding so far.
+
+| Melanoma predicted as | A | B |
+|---|---|---|
+| mel (correct) | 45.9% | 49.9% |
+| **nv** | **41.3%** | **33.3%** |
+| bkl | 5.4% | 9.0% |
+| akiec | 4.0% | 6.0% |
+| bcc | 1.6% | 0.8% |
+| df | 1.6% | 0.8% |
+| vasc | 0.2% | 0.2% |
+
+**Under the baseline, 41.3% of melanoma images were classified as melanocytic
+nevi** — the single most consequential error available in this task. Melanoma's
+errors are not scattered: of 54% misclassified, 41 points fall into NV alone.
+Classical augmentation reduced this to 33.3%, roughly thirteen additional
+melanoma across the 167 test images withheld from the benign category.
+
+**But the recovery is only partial.** Of the 8.0 points that left NV, only 4.0
+became correct classifications; the remainder moved into BKL (+3.6) and AKIEC
+(+2.0). Augmentation weakened the majority-class bias without fully supplying
+the discriminative information needed. Clinically this is still an improvement —
+BKL and AKIEC both prompt further review, whereas NV does not — but it frames
+the question for the generative arms: can synthetic images supply the missing
+information, or will they too merely shift the bias?
+
+**NV behaves as an absorbing class.** Every class leaks into it: mel 41%,
+bkl 31%, bcc 19% under the baseline. When uncertain, the model answers NV,
+because at 67% of training data that is statistically safe. Augmentation
+shrank this (NV recall 0.947 → 0.929) to the benefit of every minority class.
+
+**DF fails differently from melanoma.** DF's errors scatter across AKIEC (17%),
+BKL (12%) and MEL (12%), with only 5–7% reaching NV. Melanoma's problem is
+majority-class bias; DF's is that the model has no reliable notion of what DF
+looks like, from 71 training images. This predicts that synthetic DF images will
+help only if they carry genuine morphology rather than resampled variation —
+directly relevant to interpreting RQ2 alongside RQ1.
+
+**AKIEC's precision collapse explained.** Under B, AKIEC recall rose
+0.532 → 0.635 but precision fell (0.556 → 0.391 on seed 42). The confusion
+matrix shows why: bkl→akiec rose 2%→10%, bcc→akiec 8%→11%, mel→akiec 4%→6%.
+The model is simply predicting AKIEC more often, not recognising it better.
+
+**Run 1 (Kaggle) setup begun.**
+- Split CSVs uploaded as a **private** Kaggle dataset
+  `ham10000-splits-1229692` (700 kB, 3 files). Verified on Kaggle: test.csv
+  shows 1,121 unique lesions and 1,502 unique images, matching local exactly
+- **Images uploaded as a private dataset rather than using the public mirror.**
+  The community mirror is titled "Skin Cancer MNIST: HAM10000" and ships
+  `hmnist_*.csv` files containing 28×28 downsampled copies. MNIST is on the
+  University's rejected-dataset list, and a 28×28 file read by mistake would
+  invalidate everything downstream. Uploading 2.58 GB removes the risk
+  entirely, and keeps the directory layout identical to local
+- Zip verified before upload: 10,015 entries, flat structure, first entry
+  `ISIC_0024306.jpg`. Source folder confirmed still at 10,015 files afterwards
+- Notebook `run1-cloud-baseline` created, accelerator set to GPU T4 ×2
+
+**Run 1 environment recorded:**
+
+| | Run 1 (Kaggle) | Run 2 (local) |
+|---|---|---|
+| GPU | **Tesla T4, 15,360 MiB** | RTX 4060, 8,590 MiB |
+| Driver | 580.159.04 | 566.24 |
+| PyTorch | 2.10.0+cu128 | 2.6.0+cu124 |
+
+Only P100 or T4 ×2 were offered; T4 was selected. **Both generative arms of
+Run 1 must run on Tesla T4** — `BudgetTracker` raises `DeviceChanged` otherwise.
+The differing PyTorch versions are one more reason the two executions are
+reported separately and never pooled.
+
+### Clarifications recorded
+- Six models were trained in total so far: three for Condition A and three for
+  Condition B, each from a fresh `build_model()`. B did not continue from A;
+  that would have carried A's training into B and invalidated the comparison.
+- Classical augmentation creates **no new files**. The same 6,981 images are
+  transformed differently on each epoch, so the model rarely sees an identical
+  image twice. This is why it suppresses memorisation but does not alter class
+  balance — DF is still 71 images. The generative arms differ precisely here:
+  they add files.
+- The split is **never regenerated**, on Kaggle or anywhere. Both executions
+  read the same committed CSVs. Regenerating risks a different partition
+  through library-version differences, and with 20 DF test images a single
+  reallocated lesion moves recall by five points.
+
+### Open items
+- [ ] Kaggle datasets not yet attached to the notebook (attach was slow)
+- [ ] `sampling_pilot.py` not yet run
+- [ ] Run 1 Conditions A and B not yet executed
+- [ ] `gan.py`, `diffusion.py` not yet written
+- [ ] Ablation class still to be fixed
+
+### Next session
+1. Attach both datasets to the Kaggle notebook and confirm file counts
+2. Clone the repository into the Kaggle session so Run 1 uses identical code
+3. Run `sampling_pilot.py` on the T4 to obtain seconds-per-image, and settle the
+   Run 1 schedule against measurement rather than estimate
+4. Begin Run 1 Condition A
+
+---
+
 ## Entry template
 
 ```markdown
