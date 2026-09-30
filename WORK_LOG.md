@@ -904,6 +904,139 @@ reported separately and never pooled.
 
 ---
 
+## Day 7 — Sunday 27 September 2026
+
+**Phase:** Run 1 environment setup (Kaggle)
+**Machine:** Kaggle, CPU session only — GPU quota deliberately preserved
+
+### Objective
+Get the pre-registered primary execution environment working and verified, on
+CPU, so that no GPU quota is spent on setup.
+
+### Completed
+
+**Images uploaded as a private Kaggle dataset** rather than using the public
+community mirror. `ham10000-images-1229692`, 2.58 GB, 10,015 JPEGs, private.
+Kaggle extracted the archive automatically. Rationale recorded on Day 6: the
+mirror ships `hmnist_*.csv` files containing 28×28 downsampled copies and is
+titled "Skin Cancer MNIST", and MNIST is on the University's rejected-dataset
+list. Uploading removes the risk rather than managing it, and keeps the
+directory layout identical to local.
+
+**Both datasets attached and verified.** Kaggle's current attach mechanism
+nests inputs under an extra username level, so the paths are not those in the
+Build Manual:
+
+```
+IMG  = /kaggle/input/datasets/ashwanisingh997/ham10000-images-1229692
+SPL  = /kaggle/input/datasets/ashwanisingh997/ham10000-splits-1229692
+CODE = /kaggle/input/datasets/ashwanisingh997/thesis-code-1229692
+```
+
+`build_image_index()` resolved all 10,015 images despite the different layout,
+because it globs recursively — the fix made on Day 1 for the `part_1`/`part_2`
+problem also absorbed this one.
+
+**Splits verified identical to local**, read from the Kaggle copy:
+
+| | train | val | test |
+|---|---|---|---|
+| Images | 6,981 | 1,532 | 1,502 |
+| akiec | 222 | 53 | 52 |
+| bcc | 361 | 82 | 71 |
+| bkl | 772 | 160 | 167 |
+| df | 71 | 24 | 20 |
+| mel | 773 | 173 | 167 |
+| nv | 4,683 | 1,018 | 1,004 |
+| vasc | 99 | 22 | 21 |
+
+All three leakage assertions pass. Every count matches Run 2 exactly, which is
+what makes the two executions comparable.
+
+**Code transferred as a private dataset, not by git clone.** The repository is
+private, so `git clone` inside a Kaggle cell prompted for a GitHub username and
+hung. Entering credentials in a notebook was rejected: GitHub no longer accepts
+password authentication, and any token typed into a cell would be saved with
+the notebook. Instead `src/` and `config/` were uploaded as
+`thesis-code-1229692` (10 files, ~64 kB, private).
+
+Kaggle flattens uploads, so the files arrived without the `src/` directory.
+Rather than change the import statements — which would have made Run 1's code
+differ from Run 2's — the package layout is reconstructed in `/kaggle/working`
+at the start of the session:
+
+```python
+for f in os.listdir(CODE):
+    dst = f"{WORK}/config/{f}" if f.endswith(".yaml") else f"{WORK}/src/{f}"
+    shutil.copy(f"{CODE}/{f}", dst)
+sys.path.insert(0, WORK)
+```
+
+`from src.data import ...` then works unchanged. **Run 1 therefore executes
+byte-identical source to Run 2.**
+
+**Code provenance:** the uploaded code corresponds to commit `3853a1a`. Any
+later change to `src/` requires a new version of the Kaggle dataset, and the
+commit hash must be recorded again.
+
+**Environment confirmed:**
+
+| | Run 1 (Kaggle) | Run 2 (local) |
+|---|---|---|
+| GPU | Tesla T4, 15,360 MiB | RTX 4060, 8,590 MiB |
+| Driver | 580.159.04 | 566.24 |
+| PyTorch | 2.10.0+cu128 (GPU session) | 2.6.0+cu124 |
+| Python | 3.12 | 3.11.9 |
+
+Only T4 ×2 and TPU were offered as accelerators; P100 was unavailable. **Both
+generative arms of Run 1 must run on Tesla T4**, which `BudgetTracker` enforces
+by raising `DeviceChanged` on any resumed segment landing elsewhere.
+
+`init_run("run1_cloud")` succeeded and recorded segment 1. It correctly logged
+`cpu`, since the session had no accelerator — the registry records what is
+actually there rather than what is intended.
+
+### Decisions
+No new decision numbers. The code-transfer mechanism is an implementation
+detail, not a research choice: it changes how source reaches the execution
+environment, not what the source is.
+
+### Problems and resolutions
+- `git clone` of the private repository hung at a username prompt inside a
+  Kaggle cell. Resolved by uploading the code as a private Kaggle dataset.
+  Credentials were deliberately not entered into a notebook.
+- Kaggle's upload flattened the `src/` package. Resolved by reconstructing the
+  directory layout in `/kaggle/working` rather than editing imports, so both
+  executions run identical code.
+- An early cell calling `torch.cuda.get_device_name(0)` raised
+  `AssertionError: Torch not compiled with CUDA enabled` — expected, since the
+  session was CPU-only. Kaggle ships `2.10.0+cpu` on CPU sessions and
+  `2.10.0+cu128` on GPU sessions.
+
+### Note on `/kaggle/working`
+Its contents do not survive a session unless the notebook version is saved.
+Anything Run 1 produces — metrics, checkpoints, budget state — must be saved
+as a notebook version or downloaded before the session ends. This matters
+directly for the resumable `BudgetTracker`: its state file lives in the working
+directory, and losing it would reset the budget clock.
+
+### Open items
+- [ ] `sampling_pilot.py` not yet run — still the missing measurement behind
+      the Run 1 schedule
+- [ ] Run 1 Conditions A and B not yet executed
+- [ ] `gan.py`, `diffusion.py` not yet written
+- [ ] Ablation class still to be fixed
+- [ ] Output-persistence strategy for Run 1 to be settled before long runs
+
+### Next session
+1. Start a **GPU** session and re-run the setup cells (paths, code copy,
+   `init_run`) — this time the registry records Tesla T4
+2. Run `sampling_pilot.py` on the T4 for seconds-per-image, and fix the Run 1
+   schedule against measurement rather than estimate
+3. Begin Run 1 Condition A
+
+---
+
 ## Entry template
 
 ```markdown
