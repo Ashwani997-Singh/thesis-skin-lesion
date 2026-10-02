@@ -1037,6 +1037,137 @@ directory, and losing it would reset the budget clock.
 
 ---
 
+## Day 8 — Monday 28 September 2026
+
+**Phase:** 1–2 complete on both executions
+**Machine:** Kaggle, Tesla T4 (Run 1, the pre-registered primary execution)
+
+### Objective
+Run the sampling pilot required by D16, then execute Conditions A and B on the
+primary environment.
+
+### Completed
+
+**Sampling pilot — the measurement the Run 1 schedule depended on.**
+Tesla T4, SD 1.5, fp16, 512 px, batch 8, guidance 7.5, 20 timed images after
+warm-up:
+
+| Scheduler | Steps | s/image | Sampling total (15,000) |
+|---|---|---|---|
+| **PNDM (default)** | **30** | **4.82** | **20.1 GPU-h** |
+| DPM-Solver++ | 25 | 4.40 | 18.3 GPU-h |
+| DPM-Solver++ | 20 | 3.64 | 15.2 GPU-h |
+
+Peak VRAM 6.47 GB. The saving is sub-proportional — a third fewer steps buys
+only a quarter less time — because VAE decoding and pipeline overhead are fixed
+per image.
+
+**Dataloader throughput measured, and it changed the whole budget.**
+
+| | ms/batch | s/epoch | min/run (~20 epochs) |
+|---|---|---|---|
+| num_workers=0 | 406.4 | 89.0 | 29.7 |
+| num_workers=2 | 210.0 | 46.0 | 15.3 |
+| **num_workers=4** | **110.2** | **24.1** | **8.0** |
+
+Pure compute is 56.6 ms/step, i.e. 12.4 s/epoch. **At `num_workers=0`, 86% of
+each epoch was spent decoding JPEGs while the GPU idled.** Earlier estimates of
+26–39 GPU-hours for the classifier runs had extrapolated from compute alone and
+were badly wrong; the true figure is **3.5 GPU-hours for all 26 runs**.
+
+**Consequence: no pre-registered quantity needed changing.** Scheduler stays at
+30 steps, the efficiency curve stays at four checkpoints and 500 images per
+class, the synthetic target stays at 1,000. Recorded as **D20**. The pilot's
+value was in showing that no reduction was required, not in licensing one.
+
+**Run 1 revised budget: ~32.6 GPU-hours**, comfortably inside two quota weeks.
+Quota confirmed on the Kaggle settings page: **30 hours per week** (45 minutes
+used at the time of checking).
+
+**Run 1 Conditions A and B executed**, three seeds each, on Tesla T4 with
+PyTorch 2.10.0+cu128, code from commit `3853a1a`.
+
+| Metric | A (Run 1) | B (Run 1) | Diff |
+|---|---|---|---|
+| Macro-F1 | 0.6220 ± 0.0170 | 0.6636 ± 0.0150 | +0.042 |
+| Melanoma recall | 0.4251 ± 0.0452 | 0.5070 ± 0.1006 | +0.082 |
+| Balanced accuracy | 0.5955 ± 0.0157 | 0.6461 ± 0.0302 | +0.051 |
+| Accuracy | 0.7994 ± 0.0037 | 0.8105 ± 0.0034 | +0.011 |
+| Macro AUROC | 0.9293 ± 0.0107 | 0.9505 ± 0.0024 | +0.021 |
+
+### Findings
+
+**The replication succeeded.** Every Condition A metric overlaps between the
+two executions within seed variance, despite different GPU architecture,
+PyTorch version and Python version:
+
+| Metric | Run 1 (T4) | Run 2 (4060) |
+|---|---|---|
+| Macro-F1 | 0.622 ± 0.017 | 0.634 ± 0.038 |
+| Melanoma recall | 0.425 ± 0.045 | 0.459 ± 0.051 |
+| Balanced accuracy | 0.596 ± 0.016 | 0.602 ± 0.037 |
+| Accuracy | 0.799 ± 0.004 | 0.805 ± 0.010 |
+| Macro AUROC | 0.929 ± 0.011 | 0.931 ± 0.006 |
+
+`PRE_REGISTRATION.md` §1 anticipated disagreement and committed to reporting it
+as a finding about hardware dependence. There is no disagreement to report at
+the reference conditions. This is the strongest possible position from which to
+read the generative arms later.
+
+**AUROC is the one gain that replicates cleanly.** Run 1 +0.021 (SD 0.0024),
+Run 2 +0.019 (SD 0.0017). The same improvement, to within a thousandth, on
+different hardware. Classical augmentation reliably improves how the model
+*ranks* suspicious images.
+
+**Melanoma recall remains the unstable metric.** Run 1 Condition B gives
++0.082, the largest gain seen — but its SD is 0.1006, with seeds at 0.617,
+0.419 and 0.485. The improvement is smaller than its own spread. Across both
+executions, classical augmentation has not yet been shown to improve melanoma
+recall; the direction is consistently positive and the magnitude is consistently
+unresolvable at three seeds.
+
+**One genuine disagreement between executions: BKL.** Run 1 shows −0.054, Run 2
+shows +0.030. Both are small, but they point in opposite directions. Worth
+revisiting once all four conditions exist.
+
+**VASC gains most in both executions** — Run 1 +0.190, Run 2 +0.111. Vascular
+lesions are round and roughly symmetric, so rotation and flipping are
+well-matched to the class.
+
+**Noted, not yet interpreted:** Run 1's standard deviations are consistently
+smaller than Run 2's (macro-F1 0.017 vs 0.038). Three seeds give an SD whose own
+confidence interval spans roughly 0.6× to 3×, so these ranges overlap heavily
+and nothing can be concluded. Re-examine once twelve runs per execution exist.
+
+**Noted for D19:** Run 1 Condition B seed 43 completed all 30 epochs without
+early stopping, still improving at epoch 27 (val macro-F1 0.6838). Where seed 43
+under Condition A stopped prematurely at epoch 9, here the epoch ceiling bound
+instead. Both limits are reported as acting unevenly across seeds.
+
+### Operational
+- Kaggle's `/kaggle/working` does not persist; **Save Version → Quick Save**
+  after every run that produces results. Done at two points today.
+- Run 1 outputs downloaded as a zip and committed to the repository alongside
+  Run 2's, in `results/run1_cloud/`.
+- `num_workers=4` on Kaggle only. Run 2 keeps `num_workers=0` because Windows
+  Jupyter hangs with worker processes. This affects speed, not data.
+
+### Open items
+- [ ] `gan.py` and `diffusion.py` not yet written — now the critical path
+- [ ] Both generative arms must run **in the same quota week on Tesla T4**;
+      a week boundary risks a different accelerator allocation
+- [ ] Ablation class still to be fixed
+- [ ] Run 1 confusion matrices not yet plotted
+
+### Next session
+1. Write `src/gan.py` — conditional WGAN-GP, Equation 7.1, InstanceNorm in the
+   critic, five-class label space per D14
+2. Verify a few steps run locally, within the 1.64 GB measured on the 4060
+3. Upload the updated code as a new Kaggle dataset version and record the
+   commit hash
+
+---
+
 ## Entry template
 
 ```markdown
