@@ -652,3 +652,107 @@ specifies no value; holding these constant satisfies it.
 
 **Status: ALIGNED.** Documents a value the proposal deliberately left
 unspecified, fixed before observation and applied uniformly.
+
+---
+
+## D20 — Sampling and throughput measured; no pre-registered quantity changes required
+
+**Decision.** The sampling pilot required by D16 was run on the Run 1 device.
+Together with a dataloader throughput measurement it establishes that Run 1
+fits within two weeks of Kaggle quota **without** reducing any pre-registered
+quantity. Therefore:
+
+- The sampler remains **30 inference steps** with the default SD 1.5 scheduler
+  (PNDM), as declared in `config.yaml`. The DPM-Solver++ fallback permitted by
+  `PRE_REGISTRATION.md` §9 is **not** invoked.
+- The efficiency curve remains **four checkpoints** (1.0 / 2.0 / 3.0 / 4.0
+  GPU-hours) at **500 synthetic images per class**, as declared in D16.
+- `num_workers = 4` is used for dataloaders **on Kaggle only**; Run 2 retains
+  `num_workers = 0` because Windows Jupyter hangs with worker processes.
+
+**Measured sampling rate** (Tesla T4, SD 1.5, fp16, 512 px, batch 8, guidance
+7.5, 20 timed images after warm-up):
+
+| Scheduler | Steps | s/image | Sampling total (15,000 images) |
+|---|---|---|---|
+| **PNDM (default)** | **30** | **4.82** | **20.1 GPU-h** |
+| DPM-Solver++ | 25 | 4.40 | 18.3 GPU-h |
+| DPM-Solver++ | 20 | 3.64 | 15.2 GPU-h |
+
+Peak VRAM 6.47 GB. Note the saving is not proportional to the step reduction —
+a third fewer steps gives only a quarter less time — because VAE decoding and
+pipeline overhead are fixed per image.
+
+**Measured classifier throughput** (ResNet-50, 128 px, batch 32, AMP):
+
+| | Compute per step | Per epoch (compute) | Per epoch (measured) | Per run (~20 epochs) |
+|---|---|---|---|---|
+| num_workers=0 | 56.6 ms | 12.4 s | 89.0 s | 29.7 min |
+| num_workers=2 | 56.6 ms | 12.4 s | 46.0 s | 15.3 min |
+| **num_workers=4** | 56.6 ms | 12.4 s | **24.1 s** | **8.0 min** |
+
+**The classifier was never GPU-bound.** At `num_workers=0`, 86% of each epoch
+is spent decoding JPEGs while the GPU idles. Four worker processes reduce run
+time 3.7-fold at no cost to the result — the data reaching the model is
+identical, only its delivery changes.
+
+**Revised Run 1 budget:**
+
+| Item | GPU-hours |
+|---|---|
+| GAN training | 4.0 |
+| Diffusion training | 4.0 |
+| Headline sampling (5,000 images) | 6.7 |
+| Efficiency-curve sampling (10,000 images) | 13.4 |
+| 26 classifier runs at 8 min | 3.5 |
+| FID and memorization audit | ~1.0 |
+| **Total** | **~32.6** |
+
+Split across two quota weeks — training and sampling in week one (~28 h),
+classifier runs and audit in week two (~5 h) — this fits 60 GPU-hours with
+substantial margin. Kaggle quota resets weekly; a single generative arm is
+never split across weeks, because `BudgetTracker` would refuse to resume onto a
+differently allocated device.
+
+**Why no change was needed.** Earlier estimates put the classifier runs at
+26–39 GPU-hours, which would have forced a reduction somewhere. That estimate
+was wrong because it extrapolated from compute time alone. Measuring the
+dataloader showed the true bottleneck and removed it. **The pilot's value was
+not in licensing a reduction but in showing that none was required.**
+
+**Scheduler reasoning, recorded for completeness.** Switching to DPM-Solver++
+at 20 steps would have saved 4.9 GPU-hours, but it would have altered **every
+synthetic image in the study**, including the headline conditions from which
+all four research questions are answered. Sampler choice affects image quality
+and diversity, and therefore bears directly on FID and the memorization audit.
+A change of that reach was not worth 4.9 hours once the budget was shown to
+fit. Had a reduction been unavoidable, reducing the curve — a supporting
+analysis — would have been preferred to altering the headline images.
+
+**A note on D16's stated preference.** D16 said that if quota were tight,
+curve *quantity* should be reduced rather than intervals. Had a reduction been
+necessary, that preference would have been reversed: at 250 synthetic images
+per class, the addition to melanoma — which already has 773 real training
+images — is a 32% increase, too small for any effect to be distinguishable
+from the seed-to-seed variance measured in Condition A (melanoma recall
+± 0.051). The curve would have been uninterpretable. Reducing to three
+checkpoints at 500 images each would have preserved interpretability at every
+point. This is recorded because the preference was formed before the sampling
+rate was known; no action follows from it.
+
+**Operational notes.**
+- The Stable Diffusion safety checker is disabled (`safety_checker=None`).
+  Dermatoscopic images trigger the NSFW filter, which would silently discard
+  valid samples. No generated image is exposed publicly. To be stated in the
+  methodology chapter.
+- SD 1.5 weights are 4.27 GB and cached per session; the download recurs on
+  each new Kaggle session.
+
+**Proposal check.** Section 7.3, verbatim: *"The training budget will be
+declared before experimentation and expressed in graphics processing unit
+hours."* Sampling is outside the declared training budget (D2); these figures
+are scheduling measurements, not budget changes. `PRE_REGISTRATION.md` §6
+requires the pilot before Run 1; it has been run and recorded.
+
+**Status: ALIGNED.** Fulfils the pilot required by D16 and confirms every
+pre-registered quantity unchanged.
