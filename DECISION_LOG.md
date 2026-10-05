@@ -756,3 +756,107 @@ requires the pilot before Run 1; it has been run and recorded.
 
 **Status: ALIGNED.** Fulfils the pilot required by D16 and confirms every
 pre-registered quantity unchanged.
+
+---
+
+## D21 — Headline sampling from the end-of-budget checkpoint of each arm; observed artefacts reported, not corrected
+
+**Decision.** Headline sampling (D7, D18) uses `gan_final.pt` for Condition C and
+`lora_final` for Condition D. The generator architecture and every sampling
+setting declared in `config.yaml` (30 inference steps, default PNDM scheduler,
+guidance scale 7.5) remain unchanged after inspection.
+
+**Why the final checkpoint.** It is the model the declared budget bought: the
+state at which `BudgetTracker` recorded `gpu_hours_exhausted`. The 4.0 h
+checkpoint is written as the threshold is crossed and the final checkpoint
+moments later, so the two are near-identical; choosing one rule and applying it
+to both arms matters more than which of the two is chosen.
+
+**Inspection before sampling.** Both arms were inspected with one identical
+procedure (`inspect_generators.py`, commit `46bcb11`): 32 samples per class per
+arm, passed through the same 8-bit 128 px pathway the classifier receives, and
+compared against 32 real training images per class. Run on the local RTX 4060
+from Run 1 weights; inspection only, outside the budget (D2), and not used in
+any reported result.
+
+| | GAN | Diffusion |
+|---|---|---|
+| Spread ratio to real (pixel space) | 0.76 – 0.87 | 0.54 – 0.76 |
+| Near-duplicate pairs | none | none |
+| Label effect / noise effect | 0.76 | 0.70 |
+| Mean colour vs real | within ~10 per channel | R and G about 30 lower |
+
+LoRA adapter verified: 1.59M parameters loaded, max |lora_B| = 0.042, mean
+pixel change against base SD 1.5 at identical seeds 43–53 (0–255 scale). Base
+SD 1.5 without the adapter produces no dermatoscopic images at all.
+
+**Artefacts observed, and why they are not corrected.** Each arm carries a
+signature absent from real images: the GAN a checkerboard texture, the known
+product of stride-2 transposed convolution (Odena, Dumoulin and Olah, 2016);
+the diffusion arm a systematic darkening and shift toward magenta, consistent
+with a high classifier-free guidance scale. Changing the architecture or the
+guidance scale after observing outputs would be post-hoc tuning of one arm, and
+retraining would break the equal-budget control. Both artefacts are reported as
+findings and examined as possible classifier shortcuts in the discussion.
+
+**Pixel-space caveat.** The spread ratio is a coarse indicator only: the GAN's
+checkerboard itself inflates per-pixel variance, and the diffusion arm's uniform
+background deflates it. Diversity is assessed properly by FID and LPIPS (Phase 5).
+
+**Proposal check.** Section 7.3, verbatim: *"Where a model has not converged
+within its budget, that outcome is itself a finding and will be reported rather
+than corrected by additional training."* Table 9.1, Phase 3 contingency:
+*"non-convergence reported as a finding"*. Sampling from the end-of-budget state,
+and reporting rather than correcting what that state produces, applies the same
+principle to sample quality.
+
+**Status: ALIGNED.** Specifies a quantity the pre-registration leaves open; no
+declared setting changed.
+
+---
+
+## D22 — Real-to-real calibration of the memorization threshold excludes images of the same lesion
+
+**Decision.** When computing the real-to-real nearest-neighbour distribution
+that calibrates the near-duplicate threshold (`PRE_REGISTRATION.md` §7,
+Equation 7.5), a real image's nearest neighbour is searched among real images
+of **other lesions only**. Images sharing its `lesion_id` are excluded. The
+reference set is the generator source partition (1,526 images), the images
+both generators were trained on.
+
+**Why.** HAM10000 contains several photographs of many lesions — 62.5% of
+melanoma lesions have more than one (Figure 4). If a second photograph of the
+same lesion were allowed as the nearest neighbour, the real-to-real distribution
+would be dominated by near-duplicates of a single physical lesion, its 1st
+percentile would fall close to zero, and the threshold would become so strict
+that genuine copying by a generator could pass undetected. The calibration
+must answer "how close are two *different* lesions?", because that is the
+distance below which a synthetic image stops being a new lesion.
+
+**Direction of the risk.** This guards mainly against false negatives. The
+diffusion arm's colour shift (D21) acts in the same direction, increasing the
+distance of an otherwise copied image, so the closest synthetic–real pairs are
+additionally inspected visually (`audit.n_worst_pairs_to_plot: 10`).
+
+**Fixed before the audit.** Recorded before `src/memorization.py` was written
+and before any synthetic-to-real distance was computed.
+
+**Still to decide before the audit runs:** whether the threshold is pooled
+across the five classes or set per class, and the fixed class for the
+controlled sub-experiment (`PRE_REGISTRATION.md` §7, §9).
+
+**Proposal check.** Section 7.5, verbatim: *"The threshold will be calibrated
+using the distribution of distances between distinct real training images, so
+that it reflects the natural similarity within the dataset rather than an
+arbitrary cut-off."* Section 7.3 establishes that HAM10000 *"contains multiple
+images of the same lesion"*. Two photographs of one lesion are not distinct in
+the sense the calibration requires; D22 reads "distinct real training images"
+as images of distinct lesions, consistent with the lesion-level treatment
+applied to the split (D11).
+
+**Consequence for data handling.** Section 9.1 states that *"any synthetic
+images identified as near-duplicates of training images will not be published
+or shared."* Flagged images are therefore excluded from any figure or release.
+
+**Status: ALIGNED.** Specifies how the declared calibration is computed; the
+pre-registration fixes the percentile but not the treatment of same-lesion pairs.

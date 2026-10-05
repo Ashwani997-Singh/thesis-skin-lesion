@@ -1168,6 +1168,149 @@ instead. Both limits are reported as acting unevenly across seeds.
 
 ---
 
+## Day 9 — Sunday 4 October 2026
+
+**Phase:** 3
+**Session:** 10:22 – ~18:30 UTC (8.1 h wall clock, single session)
+**Machine:** Kaggle Tesla T4 (15.64 GB, capability 7.5, driver 580.178.04)
+
+### Objective
+Train both generative arms under the declared 4.0 GPU-hour budget, in one
+session, on one device.
+
+### Completed
+Both arms ran to budget exhaustion in a single segment each, GAN first, then
+diffusion. Source: `results/run1_cloud/logs/budget_state_run1_cloud_{gan,diffusion}.json`.
+
+| | GAN | Diffusion |
+|---|---|---|
+| GPU-hours | 4.0013 | 4.001 |
+| Optimiser steps | 3,943 | 2,741 |
+| Segments | 1 (Tesla T4) | 1 (Tesla T4) |
+| Stop reason | `gpu_hours_exhausted` | `gpu_hours_exhausted` |
+| Checkpoints | 1.0 / 2.0 / 3.0 / 4.0 h + final | same |
+
+GAN checkpoint writes took 14.6 s in total, 0.10% of the budget (D17).
+Loss history is recorded every 100 steps inside each budget-state file.
+
+**Environment** (`results/run1_cloud/run_meta_generators_session.json`):
+Python 3.13.15, PyTorch 2.11.0+cu128, code at commit `5dbc225`.
+This differs from the Conditions A/B session of 2 October (Python 3.12.13,
+PyTorch 2.10.0, commit `3853a1a`): Kaggle updated its image between sessions.
+The equal-budget comparison is unaffected (both arms in one session), but
+Conditions C/D will run on a different software version from A/B. To be
+disclosed.
+
+Outputs downloaded as `run1_generators.zip` and stored outside the repository
+at `D:\thesis_checkpoints\run1_cloud\` (1.8 GB).
+
+### Problems and resolutions
+<!-- Fill from memory: any errors hit during the session, e.g. torchao/peft. -->
+
+### Budget consumed
+GAN 4.0013 GPU-h, diffusion 4.001 GPU-h, both on Tesla T4.
+Kaggle quota after session: 09:19 / 30 h.
+
+---
+
+## Day 10 — Monday 5 October 2026
+
+**Phase:** 4
+**Session:** new chat session; handover from `00_SESSION_HANDOVER.md`
+**Machine:** local RTX 4060 (inspection only; no Kaggle quota used)
+
+### Objective
+Inspect both generators before spending ~20 GPU-hours on sampling; secure the
+records of Day 9 in the repository.
+
+### Completed
+**GAN training grids inspected by eye** (`gan_samples_{1.0h..final}.png`):
+no visible mode collapse, rows clearly class-conditioned, images still
+changing between 3.0 h and 4.0 h at fixed noise, 4.0 h and final
+indistinguishable. Checkerboard texture visible on plain backgrounds.
+
+**Both arms then inspected with one identical procedure**
+(`inspect_generators.py`, commit `46bcb11`; results in
+`results/run1_cloud/generator_inspection.json`). The first plan — GAN by eye,
+diffusion by numbers — was asymmetric and was replaced. 32 samples per class
+per arm, same 8-bit 128 px pathway as the classifier, 32 real training images
+per class as reference.
+
+| | Real | GAN | Diffusion |
+|---|---|---|---|
+| Spread ratio to real | 1.0 | 0.76 – 0.87 | 0.54 – 0.76 |
+| Near-duplicate pairs | — | none | none |
+| Label / noise effect | — | 0.76 | 0.70 |
+| Mean RGB (approx.) | 195, 148, 156 | 193, 151, 159 | 166, 117, 145 |
+
+- LoRA adapter verified: 1.59M parameters, max |lora_B| = 0.042, mean pixel
+  change vs base SD 1.5 at identical seeds 43–53. Base SD 1.5 produces no
+  dermatoscopic images at all; the domain was learned in the 4 GPU-hours.
+- Each arm carries its own artefact: GAN checkerboard texture, diffusion
+  colour shift (darker, toward magenta). Both are possible classifier shortcuts.
+- Diffusion: noise fixes the lesion layout, the prompt changes colour and
+  texture (same-seed columns share composition across classes).
+- Pixel-space spread is coarse: checkerboard inflates GAN variance, uniform
+  background deflates diffusion variance. FID and LPIPS will decide diversity.
+- Real DF has the smallest real min-pair distance (0.072), consistent with
+  multiple photographs per lesion (Figure 4).
+- Local sampling rate: 160 LoRA images in 12.4 min, ~4.65 s/image on the
+  RTX 4060 (cf. 4.82 s/image on T4, D20). Useful for planning Run 2.
+
+**Repository records secured** (commit `473a2eb`): both budget-state logs and
+the generator-session `run_meta` copied into `results/run1_cloud/`.
+
+**Data protection checked:** `data/raw/` and `data/synthetic/` ignored and never
+committed in history; only the three split CSVs are tracked. A gap was found
+and closed: `.gitignore` named `results/checkpoints/` while outputs live under
+`results/run1_cloud/` and `results/run2_local/`, so synthetic PNGs would have
+been committable. Replaced with `results/*/checkpoints/`, `results/*/synthetic/`,
+`results/*/samples/`; verified with `git check-ignore` that figures remain tracked.
+
+**Analysis plan verified:** `PRE_REGISTRATION.md` has exactly one commit,
+`02d7af7`, 23 Sep 2026 23:48, never amended, made before `gan.py` existed.
+
+### Decisions
+- **D21** — headline sampling from `final` checkpoints of both arms; observed
+  artefacts reported, not corrected (proposal §7.3).
+- **D22** — real-to-real calibration excludes same-lesion images (proposal §7.5,
+  "distinct real training images").
+- **Considered and rejected:** extending both arms beyond 4.0 GPU-hours because
+  the GAN was still changing. Rejected because the budget was declared in
+  advance, the decision would be conditioned on observed output from one arm
+  only, "changing" is not "improving", and the efficiency curve (D9) already
+  answers the question by design.
+
+### Problems and resolutions
+- `pipe.enable_vae_slicing()` no longer exists in the installed diffusers;
+  replaced by `pipe.vae.enable_slicing()` in the inspection script.
+  **The same call exists in `src/diffusion.py` `build_pipeline`**, guarded by
+  VRAM < 12 GB: never reached on the T4 (Run 1 safe), but will crash Run 2 on
+  the 8 GB RTX 4060. Must be fixed before Run 2; changing `src/` requires a new
+  Kaggle code version and recorded hash.
+
+### Budget consumed
+None. Inspection on the local GPU from Run 1 weights, outside the budget (D2).
+
+### Open items
+- [ ] Upload Run 1 checkpoints to a **private** Kaggle dataset (exclude `*_resume`)
+- [ ] Pin the Kaggle notebook environment before C/D; record as a decision
+- [ ] Fix `enable_vae_slicing` in `src/diffusion.py` before Run 2
+- [ ] D22 sub-decisions before the audit: pooled vs per-class threshold;
+      fixed class for the controlled sub-experiment (pre-registration §7, §9)
+- [ ] Save the Day 9 Kaggle notebook as `notebooks/04_run1_generators.ipynb`
+- [ ] Complete Day 9 "Problems and resolutions" from memory
+- [ ] Review and commit the pending change in `notebooks/03_figures.ipynb`
+- [ ] Email `PRE_REGISTRATION.md` to the supervisor before C/D results exist
+- [ ] Later: FFT figure of checkerboard artefact; move root `logs/` to
+      `results/run2_local/logs/`; missing `B_classical_summary.csv` in Run 2
+
+### Next session
+Upload the Run 1 checkpoints to a private Kaggle dataset, then start headline
+sampling (5 classes × 1,000 per arm) from the final checkpoints.
+
+---
+
 ## Entry template
 
 ```markdown
