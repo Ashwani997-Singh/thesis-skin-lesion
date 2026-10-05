@@ -1,9 +1,11 @@
-﻿# Raw data - never committed (licence: no redistribution, and 2.7 GB)
+# Raw data - never committed (licence: no redistribution, and 2.7 GB)
 data/raw/
 data/synthetic/
 
 # Model weights - regenerable, and far too large
-results/checkpoints/
+results/*/checkpoints/
+results/*/synthetic/
+results/*/samples/
 *.pt
 *.pth
 *.ckpt

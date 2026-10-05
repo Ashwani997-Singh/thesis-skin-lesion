@@ -1,0 +1,388 @@
+{
+  "arm": "gan",
+  "run_id": "run1_cloud",
+  "declared_gpu_hours": 4.0,
+  "cumulative_seconds": 14404.614,
+  "cumulative_gpu_hours": 4.0013,
+  "optimiser_steps": 3943,
+  "max_optimiser_steps": 20000,
+  "checkpoint_write_seconds": 14.644,
+  "checkpoint_write_share_of_budget": 0.00102,
+  "checkpoints_fired": [
+    1.0,
+    2.0,
+    3.0,
+    4.0
+  ],
+  "checkpoints_pending": [],
+  "budget_exhausted": true,
+  "segments": [
+    {
+      "segment": 1,
+      "device": {
+        "name": "Tesla T4",
+        "vram_gb": 15.64,
+        "capability": "7.5"
+      },
+      "started": "2026-10-04T10:23:43+00:00",
+      "ended": "2026-10-04T14:23:48+00:00",
+      "seconds": 14404.614,
+      "steps_at_end": 3943,
+      "stop_reason": "gpu_hours_exhausted"
+    }
+  ],
+  "history": [
+    {
+      "step": 100,
+      "gpu_hours": 0.1007,
+      "segment": 1,
+      "lossC": -60.3185,
+      "lossG": 84.0473,
+      "gp": 2.1777,
+      "w_est": 82.0957
+    },
+    {
+      "step": 200,
+      "gpu_hours": 0.2019,
+      "segment": 1,
+      "lossC": -36.1175,
+      "lossG": 72.0453,
+      "gp": 2.227,
+      "w_est": 58.3876
+    },
+    {
+      "step": 300,
+      "gpu_hours": 0.3036,
+      "segment": 1,
+      "lossC": -32.6022,
+      "lossG": 54.4483,
+      "gp": 0.9896,
+      "w_est": 42.498
+    },
+    {
+      "step": 400,
+      "gpu_hours": 0.4052,
+      "segment": 1,
+      "lossC": -35.3514,
+      "lossG": 78.3765,
+      "gp": 1.7307,
+      "w_est": 52.6582
+    },
+    {
+      "step": 500,
+      "gpu_hours": 0.5069,
+      "segment": 1,
+      "lossC": -24.1018,
+      "lossG": 60.6377,
+      "gp": 1.1397,
+      "w_est": 35.4985
+    },
+    {
+      "step": 600,
+      "gpu_hours": 0.609,
+      "segment": 1,
+      "lossC": -25.1784,
+      "lossG": 121.091,
+      "gp": 0.3637,
+      "w_est": 28.8151
+    },
+    {
+      "step": 700,
+      "gpu_hours": 0.7104,
+      "segment": 1,
+      "lossC": -32.9835,
+      "lossG": 103.335,
+      "gp": 0.8898,
+      "w_est": 41.8813
+    },
+    {
+      "step": 800,
+      "gpu_hours": 0.8116,
+      "segment": 1,
+      "lossC": -30.356,
+      "lossG": 119.5661,
+      "gp": 0.9535,
+      "w_est": 39.8914
+    },
+    {
+      "step": 900,
+      "gpu_hours": 0.9134,
+      "segment": 1,
+      "lossC": -26.5746,
+      "lossG": 92.5252,
+      "gp": 1.1328,
+      "w_est": 37.9023
+    },
+    {
+      "step": 1000,
+      "gpu_hours": 1.015,
+      "segment": 1,
+      "lossC": -27.8727,
+      "lossG": 103.2459,
+      "gp": 0.944,
+      "w_est": 37.3129
+    },
+    {
+      "step": 1100,
+      "gpu_hours": 1.1164,
+      "segment": 1,
+      "lossC": -18.8511,
+      "lossG": 130.9034,
+      "gp": 0.457,
+      "w_est": 23.4211
+    },
+    {
+      "step": 1200,
+      "gpu_hours": 1.2183,
+      "segment": 1,
+      "lossC": -19.4204,
+      "lossG": 125.9594,
+      "gp": 0.5431,
+      "w_est": 24.8511
+    },
+    {
+      "step": 1300,
+      "gpu_hours": 1.3198,
+      "segment": 1,
+      "lossC": -27.2017,
+      "lossG": 125.9724,
+      "gp": 0.7539,
+      "w_est": 34.7409
+    },
+    {
+      "step": 1400,
+      "gpu_hours": 1.4213,
+      "segment": 1,
+      "lossC": -21.9928,
+      "lossG": 132.155,
+      "gp": 0.7698,
+      "w_est": 29.6905
+    },
+    {
+      "step": 1500,
+      "gpu_hours": 1.5231,
+      "segment": 1,
+      "lossC": -36.1219,
+      "lossG": 129.2703,
+      "gp": 0.743,
+      "w_est": 43.5515
+    },
+    {
+      "step": 1600,
+      "gpu_hours": 1.6243,
+      "segment": 1,
+      "lossC": -28.948,
+      "lossG": 131.7802,
+      "gp": 0.6458,
+      "w_est": 35.4059
+    },
+    {
+      "step": 1700,
+      "gpu_hours": 1.7256,
+      "segment": 1,
+      "lossC": -22.2415,
+      "lossG": 156.8406,
+      "gp": 0.7376,
+      "w_est": 29.6175
+    },
+    {
+      "step": 1800,
+      "gpu_hours": 1.8272,
+      "segment": 1,
+      "lossC": -44.6953,
+      "lossG": 158.6716,
+      "gp": 2.0038,
+      "w_est": 64.7334
+    },
+    {
+      "step": 1900,
+      "gpu_hours": 1.9285,
+      "segment": 1,
+      "lossC": -36.2312,
+      "lossG": 121.942,
+      "gp": 1.2846,
+      "w_est": 49.0774
+    },
+    {
+      "step": 2000,
+      "gpu_hours": 2.0306,
+      "segment": 1,
+      "lossC": -34.9273,
+      "lossG": 131.5751,
+      "gp": 1.5788,
+      "w_est": 50.7156
+    },
+    {
+      "step": 2100,
+      "gpu_hours": 2.1324,
+      "segment": 1,
+      "lossC": -39.6327,
+      "lossG": 158.5807,
+      "gp": 1.6433,
+      "w_est": 56.0658
+    },
+    {
+      "step": 2200,
+      "gpu_hours": 2.2337,
+      "segment": 1,
+      "lossC": -24.4397,
+      "lossG": 173.5673,
+      "gp": 0.9791,
+      "w_est": 34.2304
+    },
+    {
+      "step": 2300,
+      "gpu_hours": 2.3349,
+      "segment": 1,
+      "lossC": -51.1579,
+      "lossG": 162.3632,
+      "gp": 1.4874,
+      "w_est": 66.0321
+    },
+    {
+      "step": 2400,
+      "gpu_hours": 2.4363,
+      "segment": 1,
+      "lossC": -50.1778,
+      "lossG": 176.8202,
+      "gp": 2.3345,
+      "w_est": 73.5232
+    },
+    {
+      "step": 2500,
+      "gpu_hours": 2.5378,
+      "segment": 1,
+      "lossC": -33.5284,
+      "lossG": 192.765,
+      "gp": 1.2347,
+      "w_est": 45.8758
+    },
+    {
+      "step": 2600,
+      "gpu_hours": 2.6392,
+      "segment": 1,
+      "lossC": -50.5576,
+      "lossG": 185.3296,
+      "gp": 1.5083,
+      "w_est": 65.641
+    },
+    {
+      "step": 2700,
+      "gpu_hours": 2.7408,
+      "segment": 1,
+      "lossC": -31.6059,
+      "lossG": 219.5084,
+      "gp": 1.3215,
+      "w_est": 44.8209
+    },
+    {
+      "step": 2800,
+      "gpu_hours": 2.8421,
+      "segment": 1,
+      "lossC": -35.7346,
+      "lossG": 207.7681,
+      "gp": 0.8186,
+      "w_est": 43.9203
+    },
+    {
+      "step": 2900,
+      "gpu_hours": 2.9435,
+      "segment": 1,
+      "lossC": -42.0419,
+      "lossG": 207.6628,
+      "gp": 3.1338,
+      "w_est": 73.3801
+    },
+    {
+      "step": 3000,
+      "gpu_hours": 3.0449,
+      "segment": 1,
+      "lossC": -36.6563,
+      "lossG": 239.047,
+      "gp": 0.937,
+      "w_est": 46.0263
+    },
+    {
+      "step": 3100,
+      "gpu_hours": 3.146,
+      "segment": 1,
+      "lossC": -41.9711,
+      "lossG": 219.2571,
+      "gp": 2.3276,
+      "w_est": 65.2475
+    },
+    {
+      "step": 3200,
+      "gpu_hours": 3.2476,
+      "segment": 1,
+      "lossC": -18.7098,
+      "lossG": 231.1876,
+      "gp": 4.5832,
+      "w_est": 64.5421
+    },
+    {
+      "step": 3300,
+      "gpu_hours": 3.3487,
+      "segment": 1,
+      "lossC": -47.4625,
+      "lossG": 237.386,
+      "gp": 1.606,
+      "w_est": 63.5226
+    },
+    {
+      "step": 3400,
+      "gpu_hours": 3.4499,
+      "segment": 1,
+      "lossC": -51.0601,
+      "lossG": 242.6493,
+      "gp": 1.7619,
+      "w_est": 68.6795
+    },
+    {
+      "step": 3500,
+      "gpu_hours": 3.5514,
+      "segment": 1,
+      "lossC": -46.4658,
+      "lossG": 265.0344,
+      "gp": 1.3571,
+      "w_est": 60.0366
+    },
+    {
+      "step": 3600,
+      "gpu_hours": 3.6526,
+      "segment": 1,
+      "lossC": -38.784,
+      "lossG": 274.8456,
+      "gp": 1.5034,
+      "w_est": 53.8185
+    },
+    {
+      "step": 3700,
+      "gpu_hours": 3.7541,
+      "segment": 1,
+      "lossC": -38.0917,
+      "lossG": 268.8292,
+      "gp": 1.9637,
+      "w_est": 57.729
+    },
+    {
+      "step": 3800,
+      "gpu_hours": 3.8557,
+      "segment": 1,
+      "lossC": -55.0331,
+      "lossG": 259.2777,
+      "gp": 1.7136,
+      "w_est": 72.1695
+    },
+    {
+      "step": 3900,
+      "gpu_hours": 3.9572,
+      "segment": 1,
+      "lossC": -57.2794,
+      "lossG": 278.7405,
+      "gp": 1.9118,
+      "w_est": 76.3976
+    }
+  ],
+  "updated": "2026-10-04T14:23:48+00:00"
+}
