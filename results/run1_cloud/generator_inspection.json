@@ -1,0 +1,205 @@
+{
+  "N": 32,
+  "real": {
+    "akiec": {
+      "spread": 0.2261,
+      "min_pair": 0.1468,
+      "mean_pair": 0.3148,
+      "mean_rgb": [
+        196,
+        145,
+        152
+      ],
+      "has_nan": false
+    },
+    "bcc": {
+      "spread": 0.2212,
+      "min_pair": 0.1322,
+      "mean_pair": 0.3058,
+      "mean_rgb": [
+        192,
+        156,
+        162
+      ],
+      "has_nan": false
+    },
+    "df": {
+      "spread": 0.2081,
+      "min_pair": 0.0724,
+      "mean_pair": 0.2852,
+      "mean_rgb": [
+        208,
+        153,
+        161
+      ],
+      "has_nan": false
+    },
+    "mel": {
+      "spread": 0.3113,
+      "min_pair": 0.1295,
+      "mean_pair": 0.4366,
+      "mean_rgb": [
+        186,
+        145,
+        149
+      ],
+      "has_nan": false
+    },
+    "vasc": {
+      "spread": 0.239,
+      "min_pair": 0.1014,
+      "mean_pair": 0.3371,
+      "mean_rgb": [
+        197,
+        145,
+        158
+      ],
+      "has_nan": false
+    }
+  },
+  "gan": {
+    "per_class": {
+      "akiec": {
+        "spread": 0.1706,
+        "min_pair": 0.0944,
+        "mean_pair": 0.2397,
+        "mean_rgb": [
+          196,
+          152,
+          157
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.755
+      },
+      "bcc": {
+        "spread": 0.1839,
+        "min_pair": 0.0988,
+        "mean_pair": 0.2572,
+        "mean_rgb": [
+          194,
+          158,
+          167
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.831
+      },
+      "df": {
+        "spread": 0.1801,
+        "min_pair": 0.0876,
+        "mean_pair": 0.2538,
+        "mean_rgb": [
+          202,
+          154,
+          160
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.865
+      },
+      "mel": {
+        "spread": 0.2475,
+        "min_pair": 0.1053,
+        "mean_pair": 0.3346,
+        "mean_rgb": [
+          178,
+          140,
+          148
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.795
+      },
+      "vasc": {
+        "spread": 0.2058,
+        "min_pair": 0.1007,
+        "mean_pair": 0.2807,
+        "mean_rgb": [
+          196,
+          152,
+          164
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.861
+      }
+    },
+    "label_effect": 0.2079,
+    "noise_effect": 0.2732,
+    "label_over_noise": 0.761
+  },
+  "diffusion": {
+    "per_class": {
+      "akiec": {
+        "spread": 0.1721,
+        "min_pair": 0.1755,
+        "mean_pair": 0.269,
+        "mean_rgb": [
+          170,
+          116,
+          142
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.761
+      },
+      "bcc": {
+        "spread": 0.1459,
+        "min_pair": 0.1439,
+        "mean_pair": 0.2326,
+        "mean_rgb": [
+          168,
+          123,
+          150
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.66
+      },
+      "df": {
+        "spread": 0.1343,
+        "min_pair": 0.1135,
+        "mean_pair": 0.2156,
+        "mean_rgb": [
+          165,
+          118,
+          147
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.645
+      },
+      "mel": {
+        "spread": 0.1842,
+        "min_pair": 0.1176,
+        "mean_pair": 0.3013,
+        "mean_rgb": [
+          160,
+          116,
+          140
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.592
+      },
+      "vasc": {
+        "spread": 0.1294,
+        "min_pair": 0.0802,
+        "mean_pair": 0.2036,
+        "mean_rgb": [
+          168,
+          114,
+          148
+        ],
+        "has_nan": false,
+        "ratio_to_real": 0.541
+      }
+    },
+    "label_effect": 0.1702,
+    "noise_effect": 0.2444,
+    "label_over_noise": 0.696
+  },
+  "adapter_check": {
+    "lora_params_M": 1.594,
+    "max_lora_B": 0.04159208759665489,
+    "pixel_diff_vs_base": {
+      "akiec": 50.2,
+      "bcc": 51.0,
+      "df": 44.2,
+      "mel": 52.8,
+      "vasc": 43.4
+    }
+  }
+}
