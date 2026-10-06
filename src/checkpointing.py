@@ -174,7 +174,7 @@ def resumable_generate(generate_one, classes, n_per_class, out_dir,
             img = generate_one(cls, gen)
 
             tmp = path.with_suffix(path.suffix + ".tmp")
-            img.save(tmp)
+            img.save(tmp, format={"jpg": "JPEG"}.get(ext.lower(), ext.upper()))  # explicit: PIL cannot infer a format from ".tmp"
             os.replace(tmp, path)
             made += 1
 

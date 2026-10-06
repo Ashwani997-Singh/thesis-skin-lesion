@@ -164,7 +164,7 @@ def build_pipeline(unet, base=BASE, device="cuda"):
 
     if torch.cuda.get_device_properties(0).total_memory / 1e9 < 12:
         pipe.enable_attention_slicing()
-        pipe.enable_vae_slicing()
+        pipe.vae.enable_slicing()
     return pipe
 
 
