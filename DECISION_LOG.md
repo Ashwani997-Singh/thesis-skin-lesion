@@ -860,3 +860,59 @@ or shared."* Flagged images are therefore excluded from any figure or release.
 
 **Status: ALIGNED.** Specifies how the declared calibration is computed; the
 pre-registration fixes the percentile but not the treatment of same-lesion pairs.
+
+---
+
+## D23 — Per-image predictions saved; Conditions A and B re-executed with C and D in one session; supplementary metrics and paired comparison fixed in advance
+
+**Decision.** Recorded before any Condition C or D classifier has been trained.
+
+1. Every classifier evaluation saves, next to its metrics JSON, the per-image
+   true label, predicted label and class probabilities on the test partition
+   (`<name>_predictions.npz`; numbers only, no image data). `src/metrics.py`
+   changed accordingly (patch `patch_metrics_d23.py`).
+2. Conditions A, B, C and D, seeds 42/43/44, are run in **one Kaggle session**,
+   on one software environment and one code version. These re-executed A and B
+   runs are the ones used in every comparison with C and D, **whatever their
+   values**. The A and B runs of 2 October 2026 are retained unchanged and
+   reported as a reproducibility check against the re-execution.
+3. Supplementary metrics are added for all four conditions: macro precision,
+   per-class specificity, and macro one-vs-rest AUPRC. Primary outcomes (D13)
+   and model selection on validation macro-F1 are unchanged.
+4. Paired comparison, fixed now. For each pair of conditions compared (D vs C
+   for RQ1; C vs B and D vs B for RQ3) and each seed-matched pair of runs, the
+   difference in macro-F1 and in melanoma recall is computed on the same
+   bootstrap resamples of the test set (1,000 resamples, 95% percentile
+   interval). A difference is called **consistent** when all three seed-matched
+   intervals exclude zero in the same direction. McNemar's test on melanoma
+   test images (correct vs incorrect) is reported per seed pair. Following
+   `PRE_REGISTRATION.md` §8, p-values are descriptive only.
+
+**Why.** The Second Marker asked for statistical testing to determine whether
+the difference between GAN and diffusion augmentation is meaningful, for an aim
+framed around statistically significant improvement, and for macro precision,
+per-class specificity and AUPRC. The metrics saved so far are summaries; a
+paired comparison on the same test images and AUPRC both require per-image
+outputs, which were not stored. RQ3 compares the generative arms with
+Condition B, so B needs per-image outputs as well, which is only possible by
+re-executing it.
+
+A second reason, not raised by the markers: A and B ran on 2 October under
+PyTorch 2.10, C and D will run under 2.11 (Kaggle image updated between
+sessions). Running all four conditions together removes that difference.
+
+**Why the re-executed runs, decided now.** Choosing between the old and new A/B
+runs after seeing C and D would be a post-hoc choice. The rule is fixed here:
+the re-executed runs are used for all comparisons; the original runs serve
+only as a reproducibility check.
+
+**Cost.** About 1.6 GPU-hours for twelve classifier runs (8 min each, D20).
+
+**Proposal check.** Section 7.6: each configuration is *"repeated across several
+random seeds and reported as a mean with its spread, so that a genuine
+difference between conditions can be distinguished from ordinary run-to-run
+variation."* The paired comparison strengthens exactly this aim.
+
+**Status: ALIGNED (extension in response to proposal feedback).** No primary
+outcome, threshold or quantity changes. Adds supplementary measures and a
+paired analysis fixed before the relevant results exist.
