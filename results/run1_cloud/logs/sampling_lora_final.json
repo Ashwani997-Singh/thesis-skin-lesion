@@ -1,0 +1,56 @@
+{
+  "sessions": [
+    {
+      "out_dir": "/kaggle/working/synthetic/run1_cloud/lora_final",
+      "classes": [
+        "akiec",
+        "bcc",
+        "df",
+        "mel",
+        "vasc"
+      ],
+      "n_per_class_target": 1000,
+      "counts_on_disk": {
+        "akiec": 1000,
+        "bcc": 1000,
+        "df": 1000,
+        "mel": 1000,
+        "vasc": 1000
+      },
+      "base_seed": 42,
+      "images_generated_this_session": 5000,
+      "images_skipped_existing": 0,
+      "session_seconds": 25346.5,
+      "seconds_per_image": 5.069,
+      "complete": true,
+      "device": "Tesla T4"
+    }
+  ],
+  "total_seconds": 25346.5,
+  "total_hours": 7.041,
+  "latest": {
+    "out_dir": "/kaggle/working/synthetic/run1_cloud/lora_final",
+    "classes": [
+      "akiec",
+      "bcc",
+      "df",
+      "mel",
+      "vasc"
+    ],
+    "n_per_class_target": 1000,
+    "counts_on_disk": {
+      "akiec": 1000,
+      "bcc": 1000,
+      "df": 1000,
+      "mel": 1000,
+      "vasc": 1000
+    },
+    "base_seed": 42,
+    "images_generated_this_session": 5000,
+    "images_skipped_existing": 0,
+    "session_seconds": 25346.5,
+    "seconds_per_image": 5.069,
+    "complete": true,
+    "device": "Tesla T4"
+  }
+}
