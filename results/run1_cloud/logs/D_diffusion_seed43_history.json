@@ -1,0 +1,149 @@
+[
+  {
+    "epoch": 0,
+    "train_loss": 0.5158434740669808,
+    "val_macro_f1": 0.5584207922914379,
+    "val_balanced_acc": 0.5557196643467724,
+    "val_accuracy": 0.7774151436031331
+  },
+  {
+    "epoch": 1,
+    "train_loss": 0.21293107033591768,
+    "val_macro_f1": 0.6046624572423713,
+    "val_balanced_acc": 0.5658523386952858,
+    "val_accuracy": 0.7924281984334204
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.09870035781263659,
+    "val_macro_f1": 0.5747762343356302,
+    "val_balanced_acc": 0.547412721803557,
+    "val_accuracy": 0.7878590078328982
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.052578988820418567,
+    "val_macro_f1": 0.6089575485299586,
+    "val_balanced_acc": 0.5706654884257688,
+    "val_accuracy": 0.8035248041775457
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.04198188600030492,
+    "val_macro_f1": 0.643353981317469,
+    "val_balanced_acc": 0.6238150270922025,
+    "val_accuracy": 0.8009138381201044
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.034380722924968694,
+    "val_macro_f1": 0.5992805557495269,
+    "val_balanced_acc": 0.5873679836897562,
+    "val_accuracy": 0.7845953002610966
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.028507900807293554,
+    "val_macro_f1": 0.6042015638886281,
+    "val_balanced_acc": 0.5718588820157207,
+    "val_accuracy": 0.7865535248041775
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.024081464226601488,
+    "val_macro_f1": 0.6546930745542364,
+    "val_balanced_acc": 0.5999664927771695,
+    "val_accuracy": 0.8126631853785901
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.02002824333870056,
+    "val_macro_f1": 0.5842798363702372,
+    "val_balanced_acc": 0.5713587618824263,
+    "val_accuracy": 0.7839425587467362
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.01423421872998313,
+    "val_macro_f1": 0.6328823912726852,
+    "val_balanced_acc": 0.6106185847590552,
+    "val_accuracy": 0.8080939947780679
+  },
+  {
+    "epoch": 10,
+    "train_loss": 0.012179435170179035,
+    "val_macro_f1": 0.6537512860086778,
+    "val_balanced_acc": 0.6157814042788115,
+    "val_accuracy": 0.8048302872062664
+  },
+  {
+    "epoch": 11,
+    "train_loss": 0.005379334613254473,
+    "val_macro_f1": 0.6207662914053191,
+    "val_balanced_acc": 0.5896018557379857,
+    "val_accuracy": 0.7950391644908616
+  },
+  {
+    "epoch": 12,
+    "train_loss": 0.011100060961198121,
+    "val_macro_f1": 0.6537490941806335,
+    "val_balanced_acc": 0.6236779392609221,
+    "val_accuracy": 0.8139686684073107
+  },
+  {
+    "epoch": 13,
+    "train_loss": 0.005572277808369298,
+    "val_macro_f1": 0.6577682614912087,
+    "val_balanced_acc": 0.6291006440518639,
+    "val_accuracy": 0.8067885117493473
+  },
+  {
+    "epoch": 14,
+    "train_loss": 0.007495227146154652,
+    "val_macro_f1": 0.6342266681777208,
+    "val_balanced_acc": 0.603152355096156,
+    "val_accuracy": 0.806135770234987
+  },
+  {
+    "epoch": 15,
+    "train_loss": 0.004529940675051401,
+    "val_macro_f1": 0.6151584552835023,
+    "val_balanced_acc": 0.587958483287537,
+    "val_accuracy": 0.7963446475195822
+  },
+  {
+    "epoch": 16,
+    "train_loss": 0.003675126728947706,
+    "val_macro_f1": 0.6331597687475824,
+    "val_balanced_acc": 0.6024874567783878,
+    "val_accuracy": 0.8120104438642297
+  },
+  {
+    "epoch": 17,
+    "train_loss": 0.0020745926593685616,
+    "val_macro_f1": 0.6230568406969184,
+    "val_balanced_acc": 0.5868243446680427,
+    "val_accuracy": 0.7963446475195822
+  },
+  {
+    "epoch": 18,
+    "train_loss": 0.0030557727406989024,
+    "val_macro_f1": 0.6274934618402843,
+    "val_balanced_acc": 0.6032213601709386,
+    "val_accuracy": 0.8028720626631853
+  },
+  {
+    "epoch": 19,
+    "train_loss": 0.0036119737546464917,
+    "val_macro_f1": 0.6391539667243886,
+    "val_balanced_acc": 0.6041360735279441,
+    "val_accuracy": 0.8133159268929504
+  },
+  {
+    "epoch": 20,
+    "train_loss": 0.001634688212620383,
+    "val_macro_f1": 0.642383314309569,
+    "val_balanced_acc": 0.6077282301142498,
+    "val_accuracy": 0.8093994778067886
+  }
+]
