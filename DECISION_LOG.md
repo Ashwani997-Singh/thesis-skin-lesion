@@ -982,3 +982,40 @@ the generators were trained on.
 open (the sub-experiment class) and how the declared calibration is computed.
 No threshold, percentile or quantity changes. Section 4 above clarifies the
 interpretation of the declared sub-experiment rather than altering it.
+
+---
+
+## D25 — FID computation fixed, and generation of the extra DF images for the controlled sub-experiment
+
+**Decision.** Recorded before any FID value or audit distance is computed.
+
+1. **FID (proposal §7.6), `src/fid.py`.** Inception-v3 pool3 features through
+   the reference `pytorch-fid` implementation. Real reference per class = the
+   generator source images of that class (training partition, D14); pooled
+   reference = all 1,526. Synthetic: all 1,000 per class per arm, 5,000 pooled
+   per arm, so every comparison between arms uses equal counts. All images pass
+   through the 128 px pathway the classifier receives before Inception's own
+   resize to 299, identically for both arms. No validation or test image is
+   used.
+2. **Stated limitations.** Inception features come from ImageNet, so FID is
+   indicative for dermatoscopy, not authoritative. FID is biased upward when a
+   covariance is estimated from few images: with 71 real DF images (99 VASC) the
+   per-class absolute values are unreliable, while the GAN-versus-diffusion
+   comparison stays valid because both arms share the same reference and count.
+   KID would be better behaved at small n; it is not added, because the proposal
+   names FID, and is noted as future work.
+3. **Extra DF images for D24.** DF images with indices 1,000 to 1,999 are
+   generated per arm from the same final checkpoints (D21), the same sampler
+   settings (30 steps, guidance 7.5, PNDM) and the same per-image seeding
+   (`image_seed(42, "df", i)`), using the resumable generator so indices 0 to
+   999 are reused, not regenerated. Before generating, five existing DF images
+   per arm are regenerated and compared with the stored files, to confirm the
+   seeding reproduces them. Sampling cost is reported separately (D2).
+
+**Why.** FID with unequal sample counts, or with a reference that differs
+between arms, would compare the estimator's bias rather than the generators.
+Reusing the stored images and seeds makes the DF sets genuinely nested, as D24
+requires.
+
+**Status: ALIGNED.** Specifies how two declared measures are computed; no
+declared quantity changes.
