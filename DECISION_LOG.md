@@ -916,3 +916,69 @@ variation."* The paired comparison strengthens exactly this aim.
 **Status: ALIGNED (extension in response to proposal feedback).** No primary
 outcome, threshold or quantity changes. Adds supplementary measures and a
 paired analysis fixed before the relevant results exist.
+
+---
+
+## D24 — Memorization audit: one pooled threshold, reference set fixed, DF as the controlled-sub-experiment class, and what that sub-experiment can show
+
+**Decision.** Recorded before `src/memorization.py` is written and before any
+synthetic-to-real distance is computed. Resolves the two items left open in D22.
+
+1. **Distance and space.** LPIPS (AlexNet), as declared in `config.yaml`
+   (`audit.feature_extractor: lpips_alex`), at 128 px, the resolution the
+   classifier receives. Real images use the identical resize.
+2. **Reference set.** The generator source partition (1,526 training images,
+   five classes): the images both generators were trained on (D14). The nearest
+   neighbour of a synthetic image is searched over **all** 1,526, not only its
+   own class, because a copy is a copy whatever label it carries.
+3. **One pooled threshold.** For each of the 1,526 real images, its nearest
+   neighbour among real images of **other lesions** (D22) in the same reference
+   set; the threshold is the 1st percentile (`audit.percentile: 1.0`) of these
+   1,526 distances, pooled across classes.
+4. **Per-class reporting without per-class thresholds.** The full distribution
+   of nearest-neighbour distances is reported per class and per arm, alongside
+   the near-duplicate rate under the single threshold. The ten closest
+   synthetic-real pairs per arm are inspected visually (`n_worst_pairs_to_plot`).
+5. **Controlled sub-experiment class: DF**, at 100, 250, 500, 1,000 and 2,000
+   synthetic images per arm. Smaller sets are nested prefixes of the larger
+   ones (image indices 0 to n-1, seeded per D2/D7 sampling), so every point uses
+   the same images plus more. DF images 1,000 to 1,999 are generated for this
+   purpose from the same final checkpoints and seeding scheme.
+
+**Why one pooled threshold.** Proposal Section 7.5 specifies *"a near-duplicate
+threshold"* calibrated on *"distances between distinct real training images"*,
+and Table 7.x defines the near-duplicate rate as the share *"below the
+calibrated threshold"*: one threshold throughout. A per-class 1st percentile
+would also be unstable for DF and VASC: with 71 DF images it rests on roughly
+one distance. The proposal's Phase 5 contingency (*"full distributions reported
+rather than a single figure"*) is met by item 4.
+
+**Why DF.** A class-conditional generator that learns DF from 71 images (51
+lesions) has the narrowest real distribution to reproduce, so copying is most
+plausible there; and any copy forms the largest share of that class's training
+data, since DF has the fewest real images. MEL (773 source images) was
+considered first and rejected: it is the primary classification outcome, but
+the sub-experiment concerns memorization, and MEL is the class where copying is
+least likely to be detectable. With a pooled threshold, DF's small size no
+longer weakens the calibration.
+
+**What the sub-experiment can and cannot show.** Drawing more samples does not
+change the generator. The expected near-duplicate *rate* is therefore the same
+at every quantity; differences between points reflect sampling variation, and a
+rate that moved systematically would indicate an error. What does grow with
+quantity is the **number** of near-duplicates and their **share of the DF
+training data** the classifier sees (near-duplicates / (71 + n)). These two
+quantities, together with downstream performance at each point (RQ4), are the
+outcomes of the sub-experiment. The determinant of memorization itself, the
+source-set size a generator is trained on, can only be varied by retraining the
+generators, which the declared reporting language already names as future work
+(`PRE_REGISTRATION.md` §7).
+
+**Proposal check.** Section 7.5 as quoted above; Equation 7.5 defines
+d(s) = min over x_i in X_train of ||phi(s) - phi(x_i)||, with X_train the images
+the generators were trained on.
+
+**Status: ALIGNED.** Specifies items `PRE_REGISTRATION.md` §9 lists as still
+open (the sub-experiment class) and how the declared calibration is computed.
+No threshold, percentile or quantity changes. Section 4 above clarifies the
+interpretation of the declared sub-experiment rather than altering it.
