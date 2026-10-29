@@ -1,0 +1,3 @@
+arm,distinct_real_nn,hub_image,hub_class,hub_count,hub_share,real_images_with_hub_as_nn,max_real_images_sharing_one_real_nn,same_class_nn_share,top10_closest_distinct_real,hub_min_dist,to_hub_df,to_hub_bcc,to_hub_vasc,to_hub_akiec,to_hub_mel
+gan_final,270,ISIC_0030665,df,1642,0.3284,2,22,0.4326,1,0.1439,696,288,276,266,116.0
+lora_final,251,ISIC_0025807,vasc,356,0.0712,2,22,0.467,6,0.1789,177,93,84,2,
