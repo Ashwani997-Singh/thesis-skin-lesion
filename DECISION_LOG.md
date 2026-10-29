@@ -1019,3 +1019,47 @@ requires.
 
 **Status: ALIGNED.** Specifies how two declared measures are computed; no
 declared quantity changes.
+
+---
+
+## D26 — Efficiency curve: three seeds per point, shared noise across checkpoints, and execution in three sessions
+
+**Decision.** Recorded before any efficiency-curve image or classifier exists.
+
+1. **Points and quantity, as declared.** Generator checkpoints at 1.0, 2.0, 3.0
+   and 4.0 GPU-hours (D9), 500 synthetic images per class (D16), five augmented
+   classes, both arms, added to the real training partition without classical
+   augmentation (as in C and D). Same ResNet-50, training settings and test set
+   as the headline conditions (`PRE_REGISTRATION.md` §6).
+2. **Seeds: 42, 43 and 44 at every point** - 24 classifier runs (4 points x 2
+   arms x 3 seeds), not the 8 single-seed runs used in the earlier cost
+   estimate.
+3. **Shared noise.** Curve images use the same per-image seeding as the
+   headline set, `image_seed(42, class, i)` for i = 0..499. Image i of a class
+   therefore starts from the same noise at every checkpoint, so differences
+   along the curve reflect the generator's training, not the draw.
+4. **Execution.** Sampling in two sessions (part a: 1.0 h and 2.0 h; part b:
+   3.0 h and 4.0 h; about 7 GPU-hours each), each stored as its own private
+   Kaggle dataset; then one session for the 24 classifier runs, saving
+   per-image predictions as in D23. Sampling cost is reported separately (D2).
+5. **Reading the curve.** Mean and seed spread of macro-F1 and melanoma recall
+   at each point, per arm. The neutral framing in `PRE_REGISTRATION.md` §6 is
+   kept: no directional prediction. The 4.0 h point is a separate draw of 500
+   per class from the 4.0 h checkpoint, not the headline set, and is not
+   compared with Conditions C and D as if it were.
+
+**Why three seeds.** `PRE_REGISTRATION.md` §8 fixes seeds 42, 43 and 44 as the
+minimum for reported results; the eight-run figure was a cost estimate, not a
+design. Observed seed spread makes one seed insufficient: the re-executed
+Condition A has a macro-F1 standard deviation of 0.048 across seeds, larger than
+any plausible step between adjacent curve points. A single-seed curve could not
+distinguish a trend from seed noise. Quota allows it: about 4.5 GPU-hours for
+24 runs at roughly 11 minutes each.
+
+**Why it matters for the feedback.** The First Marker's central criticism is
+that a fixed budget may cut generators off before convergence. The curve is the
+direct evidence: whether downstream benefit is still rising, flat, or falling
+at 4.0 GPU-hours, for each arm.
+
+**Status: ALIGNED.** Applies the declared seed minimum to a declared analysis;
+no checkpoint, quantity or classifier setting changes.
