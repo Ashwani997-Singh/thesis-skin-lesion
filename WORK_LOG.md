@@ -1311,6 +1311,153 @@ sampling (5 classes × 1,000 per arm) from the final checkpoints.
 
 ---
 
+## Day 11 — Tuesday 6 October 2026
+
+**Phase:** 4
+**Machine:** Kaggle Tesla T4 (sampling); local RTX 4060 (preparation)
+
+### Completed
+- Run 1 checkpoints uploaded as private dataset `run1-checkpoints-1229692`
+  from `run1_generators.zip` exactly as downloaded (38 files, 2,035,293,609 bytes).
+  Per-file SHA-256 manifest written (`results/run1_cloud/checkpoint_manifest.csv`);
+  digest `81280427...672dbf2` matched on Kaggle before every later session.
+- New notebook `run1-cloud-sampling`. A two-image smoke test found two bugs
+  before the full run:
+  1. `resumable_generate` saved to `*.png.tmp`; PIL cannot infer a format from
+     `.tmp` (ValueError). Fixed with an explicit format.
+  2. `pipe.enable_vae_slicing()` removed in current diffusers; replaced by
+     `pipe.vae.enable_slicing()` (path only reached on GPUs under 12 GB, i.e. Run 2).
+  Commit `99ebf8d`; Kaggle code dataset v3. Training code unchanged.
+- Headline sampling (D7, D21) from final checkpoints, committed run of 7 h 5 m:
+  GAN 5,000 images in 34 s (0.007 s/image); diffusion 5,000 in 7.04 h
+  (5.069 s/image). All 128x128 RGB, no leftover temporary files.
+  Environment identical to the generator session (Python 3.13.15, PyTorch 2.11.0).
+
+### Problems and resolutions (Day 9, completed from the session log)
+- `torchao 0.10.0` preinstalled on Kaggle broke `peft`; uninstalled at the start
+  of the session and verified with `peft.import_utils.is_torchao_available() == False`
+  before training. The same step is used in every later session.
+
+---
+
+## 7 to 26 October 2026
+
+No project work.
+
+---
+
+## Day 12 — Tuesday 27 October 2026
+
+**Phase:** 4
+**Machine:** local (preparation); Kaggle Tesla T4 (classifiers)
+
+### Completed
+- Proposal result received (15 Oct): pass, 54. Deadline 2 December 2026.
+  Every marker point logged in the Proposal Feedback Tracker with its response
+  (address / justify / limitation), where it is answered, and status.
+- Sampling records committed (`dfafc90`).
+- **D23** recorded before any C/D result: per-image test predictions saved;
+  A and B re-executed with C and D in one session; macro precision, per-class
+  specificity and macro AUPRC added; paired bootstrap and McNemar comparison
+  fixed in advance. `src/metrics.py` patched (`scripts/patch_metrics_d23.py`),
+  tested locally against scikit-learn; commit `f568fe0`, Kaggle code v4.
+- Synthetic headline set stored as private dataset
+  `run1-synthetic-headline-1229692` (10,000 files).
+- Notebook `run1-cloud-classifiers`: smoke test (1 epoch) passed; full run
+  started (A, B, C, D x seeds 42/43/44).
+
+---
+
+## Day 13 — Wednesday 28 October 2026
+
+**Phase:** 4–5
+
+### Completed
+- Classifier run complete: 12 runs in 2.19 GPU-h, 12 prediction files (commit `7a36014`).
+
+| Condition | Macro-F1 | Melanoma recall |
+|---|---|---|
+| A baseline (re-run) | 0.620 ± 0.048 | 0.469 ± 0.021 |
+| B classical (re-run) | 0.663 ± 0.019 | 0.445 ± 0.023 |
+| C GAN | 0.633 ± 0.013 | 0.493 ± 0.034 |
+| D diffusion | 0.636 ± 0.016 | 0.409 ± 0.009 |
+
+- Paired analysis per D23 (`scripts/paired_comparison.py`): no difference
+  consistent across all three seeds for any declared pair. D − C melanoma recall
+  −0.096 / −0.054 / −0.102, two of three intervals excluding zero.
+- Reproducibility: re-executed A/B macro-F1 matches 2 October (0.620 vs 0.622;
+  0.663 vs 0.664). Melanoma recall does not: B − A was +0.082 on 2 October and
+  −0.024 now, confirming melanoma recall is within seed and environment noise.
+- **D24** (audit design, DF as sub-experiment class, what the sub-experiment
+  can show) and **D25** (FID computation, extra DF images) recorded before any
+  distance or FID was computed.
+- `src/memorization.py` and `src/fid.py` written (`6c8939b`, Kaggle code v5).
+  LPIPS embedding verified exact on the RTX 4060 (max error 1.79e-07);
+  same-lesion exclusion verified (0 same-lesion neighbours).
+- Notebook `run1-cloud-audit`: smoke test passed; regenerated DF images matched
+  the stored ones exactly (mean absolute difference 0.0 for both arms). Full run started.
+
+### Decisions
+- Considered MEL for the sub-experiment first; changed to DF before any audit
+  result, for the reasons recorded in D24. Also corrected the rationale: drawing
+  more samples does not change a generator, so the rate is expected to be flat.
+
+---
+
+## Day 14 — Thursday 29 October 2026
+
+**Phase:** 5
+
+### Completed
+- Audit, FID and DF ablation complete (1.87 GPU-h, commit `fed5867`).
+  - tau = 0.1333. Zero near-duplicates in either arm, headline and every ablation
+    quantity. Closest synthetic image: GAN 0.1439, diffusion 0.1432 (margin about 0.01).
+  - FID pooled: GAN 206.7, diffusion 137.5; diffusion lower in four of five
+    classes, equal for VASC.
+  - Ten closest pairs per arm inspected by eye: no visible copies; layout similar,
+    lesions different.
+- Exploratory (not declared; `scripts/audit_hubness.py`): 32.8% of GAN images,
+  and 696 of 1,000 GAN DF images, share one nearest DF training image
+  (ISIC_0030665) that only 2 real images choose; diffusion's largest hub 7.1%.
+  Consistent with partial mode concentration in the GAN's DF class; not copying.
+- Analysis scripts moved to `scripts/`. `scripts/verification_checks.py`
+  re-runs every check first done by hand: 9/9 PASS, including tau recomputed on
+  the RTX 4060 = Kaggle T4 (same nearest neighbour for 99.9% of 1,526 images).
+  Commit `2d672b6`.
+- **D26** (efficiency curve: three seeds per point, shared noise) recorded
+  before any curve image (`0869187`).
+- Curve sampling part a started (1.0 h and 2.0 h checkpoints).
+
+---
+
+## Day 15 — Saturday 31 October 2026
+
+**Phase:** 5
+
+### Completed
+- Curve part a complete: 7.65 h session, 10,000 images; diffusion 5.473 s/image
+  (5.069 in the headline session on the same GPU model). Stored as private dataset
+  `run1-curve-a-1229692`; logs committed (`01ed5af`).
+- Curve part b started (3.0 h and 4.0 h checkpoints). Kaggle quota reset: 30 h available.
+
+### Budget consumed (sampling and evaluation, outside the training budget, D2)
+| Session | GPU-h |
+|---|---|
+| Headline sampling (6 Oct) | 7.09 |
+| Classifiers A–D (27 Oct) | 2.19 |
+| Audit + FID + DF extra (28 Oct) | 1.87 |
+| Curve part a (29–30 Oct) | 7.65 |
+
+### Open items
+- [ ] Curve part b, then 24 classifier runs for the curve
+- [ ] Quantity ablation for RQ4
+- [ ] `notebooks/04_results_analysis.ipynb` for all Chapter 5 tables and figures
+- [ ] Download Kaggle notebooks and logs into the repository; `docs/PROVENANCE.md`
+- [ ] Email to Dr. Biswas (Run 2, convergence critique, test choice)
+- [ ] Commit or discard the pending change in `notebooks/03_figures.ipynb`
+
+---
+
 ## Entry template
 
 ```markdown
