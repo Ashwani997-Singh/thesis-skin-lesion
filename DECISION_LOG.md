@@ -1063,3 +1063,49 @@ at 4.0 GPU-hours, for each arm.
 
 **Status: ALIGNED.** Applies the declared seed minimum to a declared analysis;
 no checkpoint, quantity or classifier setting changes.
+
+---
+
+## D27 — Quantity ablation (RQ4): DF only, nested quantities, Condition A as the zero point, three seeds
+
+**Decision.** Recorded before any ablation classifier is trained.
+
+1. **Class: DF.** Synthetic DF images are added at 100, 250, 500, 1,000 and
+   2,000 per arm; **no other class receives synthetic images**. Every other
+   setting is that of Conditions C and D: same real training partition, no
+   classical augmentation, same ResNet-50, training settings and test set.
+2. **Zero point = Condition A.** With no synthetic images and no augmentation
+   the training set is exactly Condition A's, so the three re-executed A runs
+   of 27 October (D23) are reused as quantity 0 rather than trained again.
+3. **Nested sets, shared with the audit.** Quantity n uses DF images 0 to n-1
+   of the final checkpoint of each arm: the same images, with the same seeds,
+   whose nearest-neighbour distances were measured in the D24 sub-experiment.
+   Images 0-999 are the stored headline set; 1,000-1,999 are regenerated with
+   the same seeding, after the first five stored images are regenerated and
+   compared (identical in the D25 check: mean absolute difference 0.0).
+4. **Seeds 42, 43, 44** (`PRE_REGISTRATION.md` §8): 5 quantities x 2 arms x
+   3 seeds = 30 runs, per-image predictions saved (D23).
+5. **Outcomes.** DF recall and DF precision (does more synthetic DF raise
+   over-prediction of DF?), macro-F1 and melanoma recall, as mean and seed
+   spread at each quantity, with per-run bootstrap intervals. Reported next to
+   the audit counts for the same images (D24), so the share of near-duplicates
+   in the DF training data and the downstream effect are read together.
+
+**Why DF, and why only DF.** The audit sub-experiment (D24) already uses DF, and
+pairing the memorization audit with downstream benefit on the same images is the
+study's second stated contribution. DF has the fewest real training images (71),
+so it is where added synthetic data can plausibly change performance. Adding
+synthetic images to one class only means any change is attributable to that
+class's synthetic data (DECISION_LOG_ADDENDUM, relationship to the quantity
+ablation). No new sampling from new checkpoints is needed.
+
+**Limitation stated in advance.** DF has 20 test images, so one image moves DF
+recall by five points. DF recall is therefore reported with bootstrap intervals
+and read together with macro-F1; no claim rests on a single-point difference.
+
+**Proposal check.** Objective 7: *"the effect of synthetic dataset size on
+classification performance"*. Quantities as fixed in `config.yaml`
+(`ablation_quantities: [0, 100, 250, 500, 1000, 2000]`).
+
+**Status: ALIGNED.** Fixes the class left open in the analysis plan; quantities
+and seeds as declared.
