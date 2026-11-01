@@ -1,0 +1,149 @@
+[
+  {
+    "epoch": 0,
+    "train_loss": 0.6555710952375751,
+    "val_macro_f1": 0.5518027474591168,
+    "val_balanced_acc": 0.5189240638822308,
+    "val_accuracy": 0.7859007832898173
+  },
+  {
+    "epoch": 1,
+    "train_loss": 0.27256906932510033,
+    "val_macro_f1": 0.5997188126554366,
+    "val_balanced_acc": 0.5799618444202161,
+    "val_accuracy": 0.7983028720626631
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.12259307449300252,
+    "val_macro_f1": 0.5969564730549587,
+    "val_balanced_acc": 0.5677807484865532,
+    "val_accuracy": 0.8022193211488251
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.06603867900345148,
+    "val_macro_f1": 0.5793266766168612,
+    "val_balanced_acc": 0.5251507009665649,
+    "val_accuracy": 0.7950391644908616
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.046525306094391865,
+    "val_macro_f1": 0.6168480829152054,
+    "val_balanced_acc": 0.5819247930406773,
+    "val_accuracy": 0.806135770234987
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.03845204356159984,
+    "val_macro_f1": 0.6073093771753879,
+    "val_balanced_acc": 0.5791695117268738,
+    "val_accuracy": 0.8035248041775457
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.037836085591938115,
+    "val_macro_f1": 0.5904356552502763,
+    "val_balanced_acc": 0.5737199135356666,
+    "val_accuracy": 0.7878590078328982
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.024318433325950285,
+    "val_macro_f1": 0.6041544227984729,
+    "val_balanced_acc": 0.5699531012942768,
+    "val_accuracy": 0.8048302872062664
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.02331141865533366,
+    "val_macro_f1": 0.606395023629115,
+    "val_balanced_acc": 0.5817892419080147,
+    "val_accuracy": 0.8009138381201044
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.013640611659699686,
+    "val_macro_f1": 0.6117046702559487,
+    "val_balanced_acc": 0.585821330600797,
+    "val_accuracy": 0.8054830287206266
+  },
+  {
+    "epoch": 10,
+    "train_loss": 0.014223373960359805,
+    "val_macro_f1": 0.622818592317614,
+    "val_balanced_acc": 0.6062654375125772,
+    "val_accuracy": 0.8074412532637075
+  },
+  {
+    "epoch": 11,
+    "train_loss": 0.008274259641180604,
+    "val_macro_f1": 0.6085712028693985,
+    "val_balanced_acc": 0.56605312801475,
+    "val_accuracy": 0.8022193211488251
+  },
+  {
+    "epoch": 12,
+    "train_loss": 0.011853487164335354,
+    "val_macro_f1": 0.607140494299885,
+    "val_balanced_acc": 0.5988887949692681,
+    "val_accuracy": 0.793733681462141
+  },
+  {
+    "epoch": 13,
+    "train_loss": 0.010429267174595833,
+    "val_macro_f1": 0.6510928285495431,
+    "val_balanced_acc": 0.6313211107461896,
+    "val_accuracy": 0.8002610966057441
+  },
+  {
+    "epoch": 14,
+    "train_loss": 0.006842913990697881,
+    "val_macro_f1": 0.6433018427869205,
+    "val_balanced_acc": 0.6118620361677752,
+    "val_accuracy": 0.8100522193211488
+  },
+  {
+    "epoch": 15,
+    "train_loss": 0.005423336702493638,
+    "val_macro_f1": 0.6268989994271544,
+    "val_balanced_acc": 0.5938051341620552,
+    "val_accuracy": 0.8133159268929504
+  },
+  {
+    "epoch": 16,
+    "train_loss": 0.0038916618559452936,
+    "val_macro_f1": 0.6267120918520105,
+    "val_balanced_acc": 0.5906795989259995,
+    "val_accuracy": 0.8185378590078329
+  },
+  {
+    "epoch": 17,
+    "train_loss": 0.002240692635021916,
+    "val_macro_f1": 0.6170108364069521,
+    "val_balanced_acc": 0.582868906084187,
+    "val_accuracy": 0.8159268929503917
+  },
+  {
+    "epoch": 18,
+    "train_loss": 0.0015037447047497104,
+    "val_macro_f1": 0.6088838334448149,
+    "val_balanced_acc": 0.5735001003586069,
+    "val_accuracy": 0.8152741514360313
+  },
+  {
+    "epoch": 19,
+    "train_loss": 0.0006625897747452395,
+    "val_macro_f1": 0.6400539879232855,
+    "val_balanced_acc": 0.6018287388558698,
+    "val_accuracy": 0.8191906005221932
+  },
+  {
+    "epoch": 20,
+    "train_loss": 0.002323499511482972,
+    "val_macro_f1": 0.6192186182407752,
+    "val_balanced_acc": 0.6020924596855824,
+    "val_accuracy": 0.8120104438642297
+  }
+]

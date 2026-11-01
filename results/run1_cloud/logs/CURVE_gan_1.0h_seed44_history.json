@@ -1,0 +1,79 @@
+[
+  {
+    "epoch": 0,
+    "train_loss": 0.7836851489504937,
+    "val_macro_f1": 0.5237127008364266,
+    "val_balanced_acc": 0.5021155308647226,
+    "val_accuracy": 0.7813315926892951
+  },
+  {
+    "epoch": 1,
+    "train_loss": 0.3383061982209566,
+    "val_macro_f1": 0.5535048092011683,
+    "val_balanced_acc": 0.5137711436671152,
+    "val_accuracy": 0.7996083550913838
+  },
+  {
+    "epoch": 2,
+    "train_loss": 0.16129079184795203,
+    "val_macro_f1": 0.5980906848929275,
+    "val_balanced_acc": 0.5707693408443195,
+    "val_accuracy": 0.8093994778067886
+  },
+  {
+    "epoch": 3,
+    "train_loss": 0.09239860219601374,
+    "val_macro_f1": 0.6671732994984507,
+    "val_balanced_acc": 0.6166285222437523,
+    "val_accuracy": 0.8224543080939948
+  },
+  {
+    "epoch": 4,
+    "train_loss": 0.06748882935980355,
+    "val_macro_f1": 0.654977875087983,
+    "val_balanced_acc": 0.6314975743134326,
+    "val_accuracy": 0.814621409921671
+  },
+  {
+    "epoch": 5,
+    "train_loss": 0.044192023301046615,
+    "val_macro_f1": 0.659499539728324,
+    "val_balanced_acc": 0.61458343769891,
+    "val_accuracy": 0.814621409921671
+  },
+  {
+    "epoch": 6,
+    "train_loss": 0.033135071972457936,
+    "val_macro_f1": 0.6511264022234755,
+    "val_balanced_acc": 0.6263986957895016,
+    "val_accuracy": 0.8093994778067886
+  },
+  {
+    "epoch": 7,
+    "train_loss": 0.03251288942195056,
+    "val_macro_f1": 0.6324001728325391,
+    "val_balanced_acc": 0.5941659430285994,
+    "val_accuracy": 0.8126631853785901
+  },
+  {
+    "epoch": 8,
+    "train_loss": 0.028355195204419006,
+    "val_macro_f1": 0.6131454922895684,
+    "val_balanced_acc": 0.5754827084951898,
+    "val_accuracy": 0.8028720626631853
+  },
+  {
+    "epoch": 9,
+    "train_loss": 0.0212210248184261,
+    "val_macro_f1": 0.6302903214072177,
+    "val_balanced_acc": 0.5974631770172331,
+    "val_accuracy": 0.8080939947780679
+  },
+  {
+    "epoch": 10,
+    "train_loss": 0.0139470469560594,
+    "val_macro_f1": 0.6384374093072527,
+    "val_balanced_acc": 0.6046063175452036,
+    "val_accuracy": 0.8126631853785901
+  }
+]
