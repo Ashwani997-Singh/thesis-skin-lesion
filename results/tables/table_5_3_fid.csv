@@ -1,0 +1,7 @@
+class,GAN (WGAN-GP),Diffusion (LoRA),real reference n
+akiec,256.0,169.7,222
+bcc,227.7,149.0,361
+df,280.6,204.9,71
+mel,216.7,170.8,773
+vasc,237.2,237.7,99
+ALL,206.7,137.5,1526
