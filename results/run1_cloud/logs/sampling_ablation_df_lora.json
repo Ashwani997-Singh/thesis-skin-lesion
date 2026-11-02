@@ -1,0 +1,40 @@
+{
+  "sessions": [
+    {
+      "out_dir": "/kaggle/working/ablation_df/lora_final",
+      "classes": [
+        "df"
+      ],
+      "n_per_class_target": 2000,
+      "counts_on_disk": {
+        "df": 2000
+      },
+      "base_seed": 42,
+      "images_generated_this_session": 1000,
+      "images_skipped_existing": 1000,
+      "session_seconds": 5637.48,
+      "seconds_per_image": 5.637,
+      "complete": true,
+      "device": "Tesla T4"
+    }
+  ],
+  "total_seconds": 5637.48,
+  "total_hours": 1.566,
+  "latest": {
+    "out_dir": "/kaggle/working/ablation_df/lora_final",
+    "classes": [
+      "df"
+    ],
+    "n_per_class_target": 2000,
+    "counts_on_disk": {
+      "df": 2000
+    },
+    "base_seed": 42,
+    "images_generated_this_session": 1000,
+    "images_skipped_existing": 1000,
+    "session_seconds": 5637.48,
+    "seconds_per_image": 5.637,
+    "complete": true,
+    "device": "Tesla T4"
+  }
+}
