@@ -1109,3 +1109,77 @@ classification performance"*. Quantities as fixed in `config.yaml`
 
 **Status: ALIGNED.** Fixes the class left open in the analysis plan; quantities
 and seeds as declared.
+
+---
+
+## D28 — Hyperparameter policy: no search in either arm; where each setting comes from, checked against its source
+
+**Recorded:** 9 November 2026, after all Run 1 results. Records the origin of
+settings that were fixed in `config/config.yaml` before generator training
+(4 October 2026) and used unchanged in every session. **No value is changed by
+this decision**, and no code is re-run.
+
+**Why it is recorded now.** The First Marker asked how a hyperparameter search
+fits within the fixed budget (F5). The planned answer was "no search in either
+arm; published defaults in both". A check of `config.yaml` against the source
+papers on 9 November showed that the GAN optimiser settings are not the
+defaults of one paper. The wording is therefore corrected to what was actually
+used, rather than the settings being changed after the results.
+
+**Policy.** No hyperparameter search was run in either arm. A search consumes
+compute, so searching within the 4.0 GPU-hour budget would leave less training
+time, and searching outside it would break the equal budget (Lucic et al.,
+2018). Each arm instead uses standard, untuned settings from the literature or
+the reference implementation, fixed before training.
+
+**Settings and their sources.**
+
+| Arm | Setting | Used | Source value | Source |
+|---|---|---|---|---|
+| GAN | Critic updates per generator update | 5 | 5 | Gulrajani et al. (2017), Algorithm 1 |
+| GAN | Gradient-penalty weight λ | 10 | 10 | Gulrajani et al. (2017), Algorithm 1 |
+| GAN | Adam β2 | 0.9 | 0.9 | Gulrajani et al. (2017), Algorithm 1 |
+| GAN | Adam learning rate | 0.0002 | 0.0001 (Algorithm 1 default); 0.0002 (their CIFAR-10 ResNet experiment) | Gulrajani et al. (2017), Algorithm 1 and Appendix F; Radford, Metz and Chintala (2015) |
+| GAN | Adam β1 | 0.5 | 0 (Gulrajani Algorithm 1); 0.5 (DCGAN) | Radford, Metz and Chintala (2015) |
+| GAN | Batch size | 64 | 64 | Gulrajani et al. (2017), Appendix F |
+| Diffusion | LoRA learning rate (AdamW) | 0.0001 | 0.0001 | Hugging Face diffusers, `train_text_to_image_lora.py` |
+| Diffusion | LoRA target modules | `to_k`, `to_q`, `to_v`, `to_out.0` | same | diffusers reference script |
+| Diffusion | Batch size, gradient accumulation | 1, 8 | 1, 4 (example command) | diffusers LoRA guide |
+| Diffusion | LoRA rank r | 8 | not prescribed; small ranks, including 8, are evaluated | Hu et al. (2022) |
+| Diffusion | LoRA α | 16 (scale α/r = 2) | equal to r in the diffusers script (scale 1) | diffusers reference script |
+| Diffusion | Sampler | PNDM, 30 steps, guidance 7.5 | SD 1.5 default scheduler and guidance; steps fixed in D20 | Rombach et al. (2022); D20 |
+| Classifier | AdamW, learning rate 0.0001, weight decay 0.0001, cosine schedule, patience 7 | — | standard fine-tuning settings | Identical in all conditions, so not a source of difference between arms (D19) |
+
+**What this means.**
+
+1. **GAN.** The critic schedule, penalty weight and β2 are the WGAN-GP
+   defaults. The learning rate (0.0002) matches the WGAN-GP authors' own
+   CIFAR-10 setting and DCGAN; β1 = 0.5 is the DCGAN value rather than the
+   WGAN-GP Algorithm 1 value of 0. The combination is not the default of a
+   single paper, and is reported as such.
+2. **Diffusion.** The learning rate and target modules are the reference
+   implementation's. α = 16 with r = 8 doubles the adapter scale relative to
+   the diffusers script (α = r). Gradient accumulation of 8 rather than 4
+   gives an effective batch of 8.
+3. **No setting was tuned, and none was changed after any result.** Both
+   generators trained to 4.0 GPU-hours with the values above, as recorded in
+   `budget_state_run1_cloud_*.json` and the `config.yaml` committed before
+   training.
+
+**Consequences for the conclusions.** Neither arm received a tuned
+configuration, so the comparison is between two untuned, standard setups at an
+equal budget. It does not show what either family achieves with tuned
+settings; the β1 choice for the GAN and the α/r scale for LoRA are both
+plausible sources of difference that are not tested. This is stated as a
+limitation (Chapter 6), together with the existing scope limitation (S4):
+conclusions hold for these instances, not for the GAN and diffusion families in
+general.
+
+**Not changed:** `config.yaml`, `src/`, every checkpoint and every result.
+
+**Wording to use from now on:** "standard, untuned settings taken from the
+WGAN-GP and DCGAN papers and from the diffusers LoRA reference implementation,
+fixed before training" — not "published defaults".
+
+**Status: ALIGNED.** Clarifies the provenance of settings already fixed;
+answers part of F5 and S4; adds one limitation.
