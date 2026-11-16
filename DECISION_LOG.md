@@ -1183,3 +1183,109 @@ fixed before training" — not "published defaults".
 
 **Status: ALIGNED.** Clarifies the provenance of settings already fixed;
 answers part of F5 and S4; adds one limitation.
+
+---
+
+## D29 — Scope after supervisor review, and a tuning sensitivity analysis declared before it is run
+
+**Recorded:** 16 November 2026, after the supervisor review of the status
+report. Item 6 is declared here before any tuned classifier is trained.
+
+### 1. Run 2 (local GPU): not part of the thesis
+
+The study is defined by one fixed, equal training budget on one cloud GPU type.
+Training on a second GPU would change that objective, so **the dissertation
+reports Run 1 only.** The local Conditions A and B runs from September
+(`notebooks/02_baseline.ipynb`, `results/run2_local/`) were made before Run 1 to
+test the pipeline; they stay in the repository as pipeline checks and are not
+reported as results. No further local training is run.
+
+### 2. Framing of the budget: resource-constrained setting
+
+The equal budget is a deliberate design choice for a controlled comparison, set
+in a realistic resource-constrained setting: free cloud GPUs (Kaggle) with a
+fixed GPU type and a weekly quota of 30 GPU-hours, the conditions under which
+many practitioners and students work.
+
+### 3. Statistics: as pre-declared
+
+The paired bootstrap per seed, the all-three-seeds rule and McNemar on melanoma
+(D23) remain the primary test. Changing the test after the results would make it
+invalid.
+
+### 4. Convergence evidence: FID at each curve checkpoint
+
+FID is computed for the 1.0, 2.0, 3.0 and 4.0 GPU-hour checkpoints of both arms,
+from the stored curve images (500 per class), with the D25 method. Cost about
+0.5 GPU-hours. It shows whether image quality was still changing while
+downstream benefit stayed flat. No budget extension.
+
+### 5. Further analyses
+
+- VAE round-trip colour check: run on the laptop (diagnostic only, no
+  training).
+- Condition D without synthetic melanoma images: about 1 GPU-hour, stored
+  images, three seeds, declared classifier settings; exploratory.
+- Colour-corrected synthetic images: not run, as it would add a new
+  preprocessing method after the results.
+
+### 6. Tuning sensitivity analysis — declared before running
+
+**Question.** Do the conclusions (no generative arm beats classical
+augmentation; no consistent GAN vs diffusion difference) still hold when the
+code is tuned?
+
+**What is tuned, and why only this.** The **classifier** training settings,
+identically for all four conditions. Tuning one generator would break the equal
+budget; tuning both generators means retraining both arms for 4.0 GPU-hours
+each plus about 7 hours of diffusion sampling (about 16 GPU-hours and several
+days), which does not fit before 2 December and is stated as future work.
+Tuning the classifier equally for A, B, C and D keeps the comparison fair.
+
+**Search space (fixed now).**
+
+| Setting | Declared value | Values tried |
+|---|---|---|
+| Learning rate | 0.0001 | 0.00003, 0.0001, 0.0003 |
+| Loss | unweighted cross-entropy | unweighted; class-weighted (inverse frequency) |
+
+Six configurations. Everything else (ResNet-50, epochs, early stopping on
+validation macro-F1, patience 7, data, test set) unchanged. The class weights
+are computed from each condition's own training set (real plus synthetic
+images). `src/classifier.py` gains one optional argument, `class_weights=None`;
+with the default, training is exactly as in every earlier run.
+
+**Procedure.**
+
+1. For each condition A to D, train all six configurations with seed 42 and
+   choose the one with the highest **validation** macro-F1. The test set is not
+   used for the choice. (24 runs.)
+2. Train the chosen configuration of each condition with seeds 43 and 44; the
+   seed-42 model from step 1 is reused. Evaluate all three on the test set.
+3. Apply the D23 paired comparison to the tuned results.
+
+Cost about 6 GPU-hours on one Tesla T4, in one Kaggle session
+(`notebooks/kaggle/k09_d29_tuning_fid.ipynb`).
+
+**How it is reported.** As a labelled secondary sensitivity analysis next to,
+never instead of, the pre-declared results. Either outcome is reported.
+
+### 7. Writing requirements
+
+- Literature review 10 to 15 pages; research gap 1 to 2 pages; flow:
+  observations, then what motivated the study.
+- References: about 60% from 2023–2026, about 30% from earlier recent years,
+  about 10% foundational papers (GAN, WGAN-GP, DDPM, LoRA, ResNet and similar).
+- Results: every number explained (why the value is what it is, under which
+  settings).
+- F7: state that no out-of-memory error occurred on the 16 GB GPU, with the
+  measured peak memory.
+- F6: present the null result as an empirical study that gives direction to
+  future work: under these constraints, generative augmentation is not
+  recommended over classical augmentation; future work with larger GPUs and
+  unconstrained budgets.
+- An appendix answering every marker point.
+
+**Status: ALIGNED.** No declared setting, metric or test of the primary
+analysis changes. Items 4 to 6 are additional analyses, declared before they
+are run and reported as secondary.
