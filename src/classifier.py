@@ -17,12 +17,18 @@ import torch
 
 def train_classifier(model, train_loader, val_loader, epochs=30, lr=1e-4,
                      weight_decay=1e-4, patience=7, device="cuda",
-                     tag="baseline", log_dir="logs"):
+                     tag="baseline", log_dir="logs", class_weights=None):
     """Fine-tune, selecting the best epoch on validation macro-F1."""
     from src.metrics import collect_predictions, compute_metrics
 
     model.to(device)
-    crit = nn.CrossEntropyLoss()
+    # class_weights=None reproduces every run before D29 exactly.
+    # D29 tuning sensitivity: 7 weights -> class-weighted cross-entropy.
+    if class_weights is None:
+        crit = nn.CrossEntropyLoss()
+    else:
+        crit = nn.CrossEntropyLoss(
+            weight=torch.as_tensor(class_weights, dtype=torch.float32, device=device))
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
     scaler = torch.amp.GradScaler("cuda")
