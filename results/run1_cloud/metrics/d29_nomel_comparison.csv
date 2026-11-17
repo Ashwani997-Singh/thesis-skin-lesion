@@ -1,0 +1,4 @@
+pair,seed,macro_f1_diff,macro_f1_lo,macro_f1_hi,mel_recall_diff,mel_recall_lo,mel_recall_hi,mel_only_first_correct,mel_only_second_correct,mcnemar_p,status
+N-D,42,-0.0138,-0.0582,0.0279,0.0,-0.079,0.0746,21,21,1.0,exploratory
+N-D,43,0.014,-0.0328,0.065,-0.024,-0.095,0.0582,20,24,0.6516,exploratory
+N-D,44,0.0048,-0.0421,0.0482,-0.018,-0.0947,0.0621,22,25,0.7709,exploratory

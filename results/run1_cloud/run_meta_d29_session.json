@@ -1,0 +1,22 @@
+{
+  "run_id": "run1_cloud",
+  "role": "PRIMARY - Kaggle free-tier GPU, matches proposal Table 8.2",
+  "created": "2026-11-16T19:54:18+00:00",
+  "segments": [
+    {
+      "segment": 1,
+      "timestamp": "2026-11-16T19:54:18+00:00",
+      "python": "3.13.16",
+      "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+      "torch": "2.11.0+cu130",
+      "cuda_available": true,
+      "cuda_version": "13.0",
+      "gpu": "Tesla T4",
+      "vram_gb": 15.64,
+      "capability": "7.5",
+      "driver": "580.178.04",
+      "git_hash": "8e5f6c0"
+    }
+  ],
+  "last_seen": "2026-11-16T19:54:18+00:00"
+}
