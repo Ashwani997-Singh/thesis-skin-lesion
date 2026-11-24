@@ -20,3 +20,7 @@ __pycache__/
 # OS
 Thumbs.db
 .DS_Store
+
+results/*_dump.txt
+results/*_output.txt
+results/figures/fig15_generator_inspection.png
