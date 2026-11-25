@@ -190,7 +190,7 @@ equal-budget control depends on.
 
 All prose in the dissertation is written by the author. Every citation is
 verified against the original paper. AI assistance was used for structuring,
-debugging and review, and is declared in the submitted AI-use declaration.
+debugging of code, and review and editing of the written text, and is declared in the submitted AI-use declaration.
 
 This is a **benchmark study on a public research dataset**. It makes no claim
 regarding diagnostic performance in clinical practice, and no prospective or
