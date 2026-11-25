@@ -1289,3 +1289,15 @@ never instead of, the pre-declared results. Either outcome is reported.
 **Status: ALIGNED.** No declared setting, metric or test of the primary
 analysis changes. Items 4 to 6 are additional analyses, declared before they
 are run and reported as secondary.
+
+---
+
+## Status at submission (25 November 2026)
+
+- PRE_REGISTRATION.md is unchanged since commit 02d7af7.
+- D8 and D29 (item 1): reported in dissertation Sections 3.3 and 3.18 (cloud execution only; local September runs of Conditions A and B retained as pipeline checks).
+- D19: early-stopping behaviour and its effect on seed-to-seed variance disclosed in Section 3.11.
+- F7 (compute and memory): reported in Sections 3.3 and 5.2 (peak GPU memory 6.47 GB).
+- F6: addressed in Sections 6.2.3 and 6.3.2.
+- Proposal marker comments: point-by-point response in Appendix B.
+- References: 116, of which 57 (49%) are from 2023-2026.
