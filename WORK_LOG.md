@@ -1458,6 +1458,108 @@ No project work.
 
 ---
 
+---
+
+## 1 to 17 November 2026 — sessions recorded from the commit history
+
+These sessions were committed to git as they happened but not written up here at
+the time. The entries below are taken from the commit messages, which carry the
+dates and the measured figures.
+
+### Day 16 — Sunday 1 November 2026
+**Phase:** 5
+- Efficiency curve part b complete (D26): 500 images per class from the 3.0 h and
+  4.0 h checkpoints, both arms; 7.31 h session; diffusion 5.22 s/image. All 20,000
+  curve images complete (`ae71c06`).
+- Curve classifiers (D26): 24 runs (4 checkpoints × 2 arms × 3 seeds), 3.83 GPU-h.
+  Macro-F1 flat from 1.0 h to 4.0 h in both arms (range of means 0.033 GAN, 0.029
+  diffusion); melanoma recall unstable (SD up to 0.11) (`0995420`).
+- **D27** recorded before any ablation run: quantity ablation (RQ4) on DF only, at
+  100 to 2,000 images per arm, nested sets shared with the D24 audit, Condition A
+  reused as the zero point, seeds 42/43/44, 30 runs (`c73e247`).
+
+### Day 17 — Monday 2 November 2026
+**Phase:** 5–6
+- Quantity ablation (D27): 30 runs, 7.08 GPU-h; DF images 0–4 reproduced exactly.
+  GAN DF recall 0.30 at 2,000 images against 0.45 at 0; DF recall within test-set
+  noise (20 DF test images) (`9fac150`).
+- `notebooks/04_results_analysis.ipynb`: results tables and figures built only
+  from committed metrics and logs, with no GPU and no images (`8d7905d`).
+
+### Day 18 — Monday 9 November 2026
+**Phase:** 6
+- **D28** recorded: hyperparameter policy, with the source of every setting
+  checked against the original papers (`d4fd0f2`).
+- Kaggle Run 1 notebooks added to the repository as saved after each run
+  (`9eaf464`).
+
+### Day 19 — Monday 16 November 2026
+**Phase:** 6
+- **D29** recorded after supervisor review: scope fixed, and the tuning
+  sensitivity analysis declared before it was run (`8b841c6`).
+- Optional `class_weights` added to the classifier, default unchanged, so every
+  earlier run is unaffected (`8e5f6c0`).
+
+### Day 20 — Tuesday 17 November 2026
+**Phase:** 6
+- D29 results: FID at each curve checkpoint, tuning sensitivity
+  (validation-selected), and Condition D without synthetic melanoma images;
+  analysis script and figures 13–14 (`3be9112`).
+- D29 item 5: VAE round-trip colour check; the VAE explains about 8% of the
+  diffusion colour shift (`15ca0a4`).
+
+### 18 to 25 November 2026
+Dissertation writing. Thesis analysis and figure scripts, the per-class
+specificity table and the remaining charts committed (`b8a0f17`). The sample
+figure of real HAM10000 images (`fig05_real_samples.png`), committed with the
+exploratory analysis in the freeze commit `0e2add0`, was removed from version
+control and kept locally for the thesis (`9d3bd27`).
+
+---
+
+## Status at submission — items left open in earlier entries
+
+Every open item from Days 1 to 15 is listed once, with where it was closed.
+
+| Open item (first raised) | Closed | Where |
+|---|---|---|
+| GitHub private repository; `.gitignore` before first commit (Day 1) | Day 3 | Freeze commit `0e2add0`; private repository created and pushed. `.gitignore` extended on Day 10. The sample figure of real images included in `0e2add0` was untracked on 25 Nov (`9d3bd27`) |
+| `gpu_probe.py` (Day 1) | Day 4 | `5ef3f42`, `gpu_probe_results.json` |
+| PRE_REGISTRATION §6 cost and `Date fixed:` (Day 1) | Day 3 | `02d7af7`; never amended afterwards (verified Day 10) |
+| D7 synthetic target (Day 1) | Day 2 | D18: flat 1,000 per class on measured counts |
+| `utils.py`, `split.py` (Day 1) | Day 2 | `src/utils.py`, `src/split.py` |
+| `classifier.py` (Day 1) | Day 5 | `src/classifier.py` |
+| `gan.py`, `diffusion.py` (Day 1) | Before Day 9 | Code at `5dbc225` used for generator training |
+| Class-distribution figure at 300 DPI (Day 1) | Day 3 | `fig01_class_distribution.png` |
+| Split CSVs written to `data/splits/` (Day 2) | Day 3 | Frozen in `0e2add0` |
+| Figure 6, split composition (Day 3) | Day 4 | `fdd87b8` |
+| Decision-log addendum D14–D18 in the repository (Day 3) | Day 4 | `20dbef8` |
+| README (Day 3) | Day 4 | `e3eaa81` |
+| Ablation class (Day 2) | Day 13 / Day 16 | DF, fixed in D24 and D27 before any audit or ablation result |
+| Condition B; confusion matrices (Day 5) | Day 6 | Condition B, Figure 7 |
+| `sampling_pilot.py` (Day 4) | Day 8 | D20 |
+| Split CSVs and images on Kaggle as private datasets (Day 4) | Days 6–7 | `ham10000-splits-1229692`, `ham10000-images-1229692` |
+| Run 1 begun; output persistence (Days 5–7) | Day 8 | Save Version after every run |
+| Both generative arms in one quota week on Tesla T4 (Day 8) | Day 9 | Both arms in one session, one device |
+| Run 1 confusion matrices (Day 8) | Day 13 | `fig07_confusion_matrices_run1.png`; headline figure `fig07_confusion_matrices_AtoD.png` |
+| Run 1 checkpoints as a private dataset (Day 10) | Day 11 | `run1-checkpoints-1229692`, SHA-256 manifest |
+| Pin the Kaggle environment before C/D (Day 10) | Day 12 | Resolved by D23 instead: A and B re-executed with C and D in one session |
+| `enable_vae_slicing` fix (Day 10) | Day 11 | `99ebf8d` |
+| D22 sub-decisions: pooled threshold, sub-experiment class (Day 10) | Day 13 | D24 |
+| Day 9 notebook saved; Day 9 problems completed (Day 10) | Days 11, 18 | Problems completed on Day 11; notebooks added in `9eaf464` |
+| Curve part b; 24 curve classifiers (Day 15) | Day 16 | `ae71c06`, `0995420` |
+| Quantity ablation for RQ4 (Day 15) | Day 17 | `9fac150` |
+| `notebooks/04_results_analysis.ipynb` (Day 15) | Day 17 | `8d7905d` |
+| Kaggle notebooks into the repository (Day 15) | Day 18 | `9eaf464` |
+| Pending change in `notebooks/03_figures.ipynb` (Days 10, 15) | By 25 Nov | No uncommitted changes remain (`git status` clean on 25 Nov) |
+| Run 2 items: `B_classical_summary.csv`, moving root `logs/` (Day 10) | Day 19 | Not needed: under D29 Run 2 is not reported |
+| FFT figure of the checkerboard artefact (Day 10) | Not done | Artefacts reported descriptively in the thesis (Section 5.3) |
+| `docs/PROVENANCE.md` (Day 15) | Not created | Provenance is given by the code index (thesis Appendix D) and the `run_meta` files |
+
+No open items remain that affect a reported result.
+
+---
+
 ## Entry template
 
 ```markdown

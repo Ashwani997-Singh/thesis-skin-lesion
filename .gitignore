@@ -26,3 +26,5 @@ results/*_output.txt
 results/figures/fig15_generator_inspection.png
 
 results/figures/fig05_real_samples.png
+
+*.docx
